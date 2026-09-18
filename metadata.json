@@ -1,0 +1,6 @@
+{
+  "name": "DevDeutsch: DevOps German Learning",
+  "description": "Learn Technical & Workplace German for Senior DevOps Engineers with English and Tamil localization, Duolingo-style sentence drills, voice synthesis, speech practice, and interview simulations.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
