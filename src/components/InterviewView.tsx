@@ -3,7 +3,12 @@ import {
   Volume2, 
   Mic, 
   CheckCircle2, 
-  ArrowRight
+  Users,
+  AlertTriangle,
+  Layers,
+  CircleDollarSign,
+  Play,
+  PlayCircle
 } from 'lucide-react';
 import { UserStats } from '../types';
 import { INTERVIEW_SCENARIOS, STANDUP_QUICK_ANCHORS } from '../data/interviewData';
@@ -12,18 +17,19 @@ import { speakGerman } from '../utils/speech';
 interface InterviewViewProps {
   stats: UserStats;
   onUpdateStats: (newStats: Partial<UserStats>) => void;
+  isTamilActive?: boolean;
 }
 
 export const InterviewView: React.FC<InterviewViewProps> = ({
   stats,
-  onUpdateStats
+  onUpdateStats,
+  isTamilActive = true
 }) => {
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(INTERVIEW_SCENARIOS[0].id);
   const currentScenario = INTERVIEW_SCENARIOS.find(s => s.id === selectedScenarioId) || INTERVIEW_SCENARIOS[0];
 
   const [selectedOptionId, setSelectedOptionId] = useState<string>(currentScenario.options[0].id);
   const [isPromptPlaying, setIsPromptPlaying] = useState(false);
-  const [isOptionPlaying, setIsOptionPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [speechEvaluation, setSpeechEvaluation] = useState<{
     clarity: number;
@@ -33,10 +39,6 @@ export const InterviewView: React.FC<InterviewViewProps> = ({
 
   // Active anchor audio playing
   const [playingAnchor, setPlayingAnchor] = useState<string | null>(null);
-
-  // Quick Grammatik placement tester state
-  const [testVerbPlaced, setTestVerbPlaced] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<'idle' | 'correct' | 'wrong'>('idle');
 
   // Play scenario prompt
   const handlePlayPrompt = (speed: number = 1.0) => {
@@ -50,12 +52,7 @@ export const InterviewView: React.FC<InterviewViewProps> = ({
 
   // Play option German text
   const handlePlayOption = (text: string) => {
-    setIsOptionPlaying(true);
-    speakGerman(text, 1.0, () => {
-      setIsOptionPlaying(false);
-    }, () => {
-      setIsOptionPlaying(false);
-    });
+    speakGerman(text, 1.0);
   };
 
   // Play Standup Anchor
@@ -74,7 +71,6 @@ export const InterviewView: React.FC<InterviewViewProps> = ({
       setIsRecording(true);
       setSpeechEvaluation(null);
 
-      // Simulate real-time speech evaluation
       setTimeout(() => {
         setIsRecording(false);
         setSpeechEvaluation({
@@ -82,8 +78,12 @@ export const InterviewView: React.FC<InterviewViewProps> = ({
           wordOrder: 100,
           feedback: 'Perfekte Aussprache! Satzklammer (habe ... fertiggestellt) und keine Blocker einwandfrei artikuliert.'
         });
-        // Reward XP
-        onUpdateStats({ xp: Math.min(stats.maxXp, stats.xp + 35) });
+        onUpdateStats({ 
+          xp: Math.min(stats.maxXp, stats.xp + 35),
+          streakDays: Math.max(1, stats.streakDays),
+          pronunciationScore: stats.pronunciationScore === 0 ? 96 : Math.round((stats.pronunciationScore + 96) / 2),
+          phoneticsHours: parseFloat((stats.phoneticsHours + 0.1).toFixed(1))
+        });
       }, 3500);
     } else {
       setIsRecording(false);
@@ -91,399 +91,360 @@ export const InterviewView: React.FC<InterviewViewProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 max-w-[1440px] mx-auto pb-20">
-      {/* View Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+    <div className="w-full flex flex-col gap-5 sm:gap-6 max-w-[1320px] mx-auto pb-24">
+      {/* Simulation Terminal Header Banner */}
+      <section className="w-full p-4 sm:p-6 bg-white border border-border-subtle shadow-xs rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-[11px] font-bold border border-emerald-200">
-              DEVOPS WORKPLACE SIMULATOR
-            </span>
-            <span className="text-slate-400 font-mono text-xs">•</span>
-            <span className="text-slate-600 font-mono text-xs">
-              INCIDENT CALLS & AGILE CEREMONIES IN TECHNICAL GERMAN
-            </span>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider mb-1 flex-wrap">
+            <span className="text-sky-700">Simulation Terminal</span>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-700">Ritual: {currentScenario.title}</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1" />
           </div>
-
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mt-1">
-            DevOps Arbeitsplatz-Simulator <span className="text-slate-500 font-normal text-lg">/ நேர்காணல் & தினசரி சூழல்</span>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-sans">
+            DevOps Arbeitsplatz-Simulator <span className="font-normal text-slate-500 text-base sm:text-lg">/ Workplace Simulation Terminal</span>
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 font-mono text-xs text-amber-700 font-bold shadow-xs">
-            ⚡ Scenario XP Bounty: +35 XP
-          </span>
+        <div className="flex items-center gap-3 bg-slate-50 px-3.5 py-2 rounded-xl border border-border-subtle shadow-2xs self-start md:self-auto">
+          <div className="flex flex-col text-left md:text-right">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider font-mono">Company Context</span>
+            <span className="text-xs sm:text-sm text-emerald-800 font-bold font-sans">{currentScenario.companyContext}</span>
+          </div>
+          <div className="h-7 w-px bg-slate-200" />
+          <div className="flex items-center gap-1.5 text-amber-700">
+            <Mic className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="text-[11px] font-bold uppercase font-mono">B2/C1 Speech</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Scenario Selector Navigation Tabs */}
+      <div className="w-full overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex items-center gap-2 min-w-max p-1 bg-slate-50 border border-border-subtle rounded-xl">
+          {INTERVIEW_SCENARIOS.map((sc, idx) => {
+            const isSelected = selectedScenarioId === sc.id;
+            return (
+              <button
+                key={sc.id}
+                onClick={() => {
+                  setSelectedScenarioId(sc.id);
+                  setSelectedOptionId(sc.options[0].id);
+                  setSpeechEvaluation(null);
+                }}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                    : 'text-slate-700 hover:text-slate-900 hover:bg-white border border-transparent hover:border-border-subtle'
+                }`}
+              >
+                {idx === 0 && <Users className="w-3.5 h-3.5" />}
+                {idx === 1 && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
+                {idx === 2 && <Layers className="w-3.5 h-3.5 text-sky-500" />}
+                {idx === 3 && <CircleDollarSign className="w-3.5 h-3.5 text-amber-500" />}
+                <span className="font-sans font-medium">{sc.number}. {sc.title}</span>
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono ${
+                  isSelected 
+                    ? 'bg-emerald-700 text-white' 
+                    : sc.badgeColor || 'bg-slate-100 text-slate-700'
+                }`}>
+                  {sc.badge}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Scenario Selector Tabs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {INTERVIEW_SCENARIOS.map((sc) => (
-          <button
-            key={sc.id}
-            onClick={() => {
-              setSelectedScenarioId(sc.id);
-              setSelectedOptionId(sc.options[0].id);
-              setSpeechEvaluation(null);
-            }}
-            className={`p-3.5 rounded-2xl text-left transition-all border flex flex-col justify-between gap-2 shadow-xs ${
-              selectedScenarioId === sc.id
-                ? 'bg-slate-900 border-slate-900 text-white'
-                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold ${
-                selectedScenarioId === sc.id
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                  : 'bg-slate-100 text-slate-700 border border-slate-200'
-              }`}>
-                {sc.badge}
-              </span>
-              <span className={`text-[10px] font-mono ${selectedScenarioId === sc.id ? 'text-slate-400' : 'text-slate-500'}`}>
-                {sc.companyContext.split('•')[0]}
-              </span>
-            </div>
-
-            <div>
-              <h3 className={`font-mono text-xs md:text-sm font-bold truncate ${selectedScenarioId === sc.id ? 'text-white' : 'text-slate-900'}`}>
-                {sc.title}
-              </h3>
-              <p className={`text-[11px] font-sans truncate ${selectedScenarioId === sc.id ? 'text-slate-300' : 'text-slate-500'}`}>
-                {sc.speakerName} ({sc.speakerRole.split('/')[0]})
-              </p>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Main Simulation Workspace: 8 Cols Active Dialogue + 4 Cols Standup Anchors & Rules */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left 8 Cols: Dialogue, Spoken Audio Prompt & Interactive Responses */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-          {/* Central Speaker Audio Prompt Card */}
-          <div className="p-6 md:p-8 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-6 relative">
-            {/* Speaker Bio Row */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <img
-                  src={currentScenario.speakerAvatar}
-                  alt={currentScenario.speakerName}
-                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-xs shrink-0"
-                />
-
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
-                      {currentScenario.speakerName}
-                    </h2>
-                    <span className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 font-mono text-[10px] font-bold border border-sky-200">
-                      {currentScenario.speakerRole}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-600 font-mono mt-0.5">
-                    {currentScenario.speakerTeam} • <span className="text-slate-400">{currentScenario.companyContext}</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Turn Counter */}
-              <span className="font-mono text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shrink-0">
+      {/* Main Split Console */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+        {/* LEFT COLUMN: Interactive Simulation Flow (7 Cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-4 sm:gap-5 min-w-0">
+          {/* Simulation Stage Indicator */}
+          <div className="flex items-center justify-between bg-white border border-border-subtle px-4 py-2.5 rounded-xl shadow-xs flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping" />
+              <span className="text-xs sm:text-sm font-bold text-slate-900 font-sans">
                 {currentScenario.turnText}
               </span>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 hidden sm:inline">
+                Tone: {currentScenario.targetTone}
+              </span>
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold font-mono">
+                {currentScenario.squad}
+              </span>
+            </div>
+          </div>
 
-            {/* German Audio Prompt Box */}
-            <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
-              <div className="flex items-center justify-between font-mono text-[10px] text-slate-500">
-                <span className="text-sky-700 font-bold uppercase tracking-wider">
-                  DEUTSCHE SPRACHAUSGABE (GERMAN AUDIO PROMPT):
-                </span>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handlePlayPrompt(1.0)}
-                    disabled={isPromptPlaying}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-mono text-xs font-bold hover:bg-emerald-700 transition-all shadow-xs"
-                  >
-                    <Volume2 className="w-3.5 h-3.5" />
-                    <span>{isPromptPlaying ? 'Playing...' : 'Play (1.0x)'}</span>
-                  </button>
-
-                  <button
-                    onClick={() => handlePlayPrompt(0.8)}
-                    disabled={isPromptPlaying}
-                    className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 font-mono text-xs border border-slate-200 transition-colors shadow-xs"
-                  >
-                    0.8x
-                  </button>
+          {/* Scrum Master / Lead Dialogue Card */}
+          <div className="bg-white rounded-2xl border border-border-subtle shadow-xs p-4 sm:p-5 flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
+              <div className="flex items-center gap-3">
+                <div className="relative shrink-0">
+                  <img
+                    src={currentScenario.speakerAvatar}
+                    alt={currentScenario.speakerName}
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover ring-2 ring-slate-200"
+                  />
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-xs">
+                    <Volume2 className="w-3 h-3" />
+                  </span>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-900 text-sm sm:text-base font-sans truncate">
+                      {currentScenario.speakerName}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-mono">
+                      {currentScenario.speakerRole}
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-500 font-sans">
+                    Team: {currentScenario.speakerTeam}
+                  </span>
                 </div>
               </div>
 
-              {/* Spoken Text */}
-              <p className="text-base md:text-lg text-slate-900 font-medium leading-relaxed">
+              {/* Audio Controls */}
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-border-subtle p-1 rounded-xl shrink-0">
+                <button
+                  onClick={() => handlePlayPrompt(1.0)}
+                  disabled={isPromptPlaying}
+                  className="px-2.5 py-1 rounded bg-sky-100 text-sky-800 hover:bg-sky-200 transition-colors text-xs font-semibold flex items-center gap-1 shadow-2xs cursor-pointer font-sans"
+                >
+                  <Volume2 className="w-3 h-3" />
+                  <span>1.0x</span>
+                </button>
+                <button
+                  onClick={() => handlePlayPrompt(0.8)}
+                  disabled={isPromptPlaying}
+                  className="px-2 py-1 rounded hover:bg-white text-slate-600 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  0.8x
+                </button>
+              </div>
+            </div>
+
+            {/* Audio Waveform Visualization */}
+            <div className="bg-slate-50 border border-border-subtle rounded-xl p-2.5 flex items-center gap-3">
+              <button
+                onClick={() => handlePlayPrompt(1.0)}
+                className="w-8 h-8 shrink-0 rounded-lg bg-white border border-border-subtle hover:bg-emerald-600 hover:text-white text-emerald-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                aria-label="Play prompt waveform"
+              >
+                <Play className="w-4 h-4 fill-current" />
+              </button>
+              <div className="flex-1 flex items-center gap-1 h-6 px-1 overflow-hidden">
+                <span className="w-1 h-2 bg-sky-300 rounded-full animate-pulse" />
+                <span className="w-1 h-4 bg-sky-400 rounded-full" />
+                <span className="w-1 h-6 bg-emerald-500 rounded-full" />
+                <span className="w-1 h-3 bg-emerald-400 rounded-full" />
+                <span className="w-1 h-5 bg-sky-500 rounded-full animate-pulse" />
+                <span className="w-1 h-4 bg-sky-400 rounded-full" />
+                <span className="w-1 h-2 bg-sky-300 rounded-full" />
+                <span className="w-1 h-5 bg-emerald-500 rounded-full" />
+                <span className="w-1 h-6 bg-emerald-600 rounded-full" />
+                <span className="w-1 h-4 bg-sky-500 rounded-full" />
+                <span className="w-1 h-3 bg-sky-400 rounded-full" />
+                <span className="w-1 h-5 bg-sky-500 rounded-full" />
+                <span className="w-1 h-4 bg-emerald-500 rounded-full" />
+                <span className="w-1 h-2 bg-emerald-400 rounded-full" />
+              </div>
+              <span className="text-[11px] font-mono text-slate-500 font-semibold shrink-0">00:04</span>
+            </div>
+
+            {/* Prompt Speech Box */}
+            <div className="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-border-subtle flex flex-col gap-2">
+              <p className="text-sm sm:text-base text-slate-900 font-semibold leading-relaxed font-sans">
                 "{currentScenario.germanAudioPrompt}"
               </p>
-
-              {/* Multilingual Context Accordions (EN & Tamil) */}
-              <div className="pt-3 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm">
-                <div className="p-3.5 rounded-xl bg-white border border-slate-200">
-                  <span className="font-mono text-[10px] text-sky-700 font-bold block uppercase mb-1">
-                    ENGLISH CONTEXT
-                  </span>
-                  <p className="text-slate-600 leading-relaxed">
-                    {currentScenario.englishContext}
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white border border-slate-200">
-                  <span className="font-mono text-[10px] text-amber-700 font-bold block uppercase mb-1">
-                    TAMIL CONTEXT (தமிழாக்கம்)
-                  </span>
-                  <p className="text-slate-800 leading-relaxed font-sans">
+              <div className="flex items-start gap-2 pt-2 border-t border-border-subtle">
+                <span className="text-[10px] text-sky-700 font-bold uppercase shrink-0 mt-0.5 font-mono">EN:</span>
+                <p className="text-xs text-slate-600 font-sans">
+                  {currentScenario.englishContext}
+                </p>
+              </div>
+              {isTamilActive && currentScenario.tamilContext && (
+                <div className="flex items-start gap-2">
+                  <span className="text-[10px] text-amber-700 font-bold uppercase shrink-0 mt-0.5 font-mono">தமிழ்:</span>
+                  <p className="text-xs text-slate-600 font-sans">
                     {currentScenario.tamilContext}
                   </p>
                 </div>
-              </div>
-            </div>
-
-            {/* Candidate Response Options */}
-            <div className="flex flex-col gap-3">
-              <span className="font-mono text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                Select or Speak Your Technical Response (உங்கள் பதில்):
-              </span>
-
-              <div className="space-y-3">
-                {currentScenario.options.map((opt) => {
-                  const isSelected = selectedOptionId === opt.id;
-
-                  return (
-                    <div
-                      key={opt.id}
-                      onClick={() => setSelectedOptionId(opt.id)}
-                      className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 shadow-xs ${
-                        isSelected
-                          ? 'bg-emerald-50/50 border-emerald-500 ring-2 ring-emerald-500/20'
-                          : 'bg-white border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className={`font-mono text-xs font-bold ${opt.recommended ? 'text-emerald-700' : 'text-amber-700'}`}>
-                            {opt.label}
-                          </span>
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono text-[10px] border border-slate-200">
-                            {opt.typeBadge}
-                          </span>
-                        </div>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePlayOption(opt.germanText);
-                          }}
-                          className="flex items-center gap-1 text-xs font-mono text-sky-700 hover:underline"
-                        >
-                          <Volume2 className="w-3.5 h-3.5" />
-                          <span>Listen</span>
-                        </button>
-                      </div>
-
-                      <p className="text-sm md:text-base font-mono text-slate-900 leading-relaxed">
-                        "{opt.germanText}"
-                      </p>
-
-                      <p className="text-xs text-slate-600 font-sans">
-                        🇮🇳 {opt.tamilText}
-                      </p>
-
-                      {isSelected && (
-                        <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs font-mono text-emerald-800">
-                          <span>✓ {opt.feedbackMsg}</span>
-                          <span className="text-slate-500">Clarity: {opt.clarityScore}%</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Mic Practice & Pronunciation Benchmark */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleToggleRecord}
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
-                    isRecording
-                      ? 'bg-rose-600 text-white animate-pulse ring-4 ring-rose-400/30'
-                      : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs'
-                  }`}
-                  title={isRecording ? 'Stop Recording' : 'Speak into Microphone'}
-                >
-                  <Mic className="w-6 h-6" />
-                </button>
-
-                <div>
-                  <h4 className="font-mono text-sm font-bold text-slate-900">
-                    {isRecording ? 'Recording Speech in German...' : 'Record Your Response / உங்கள் குரல்'}
-                  </h4>
-                  <p className="text-xs text-slate-500 font-mono">
-                    Verbal Clarity, V2 Word Order & Tech Fluency analysis
-                  </p>
-                </div>
-              </div>
-
-              {speechEvaluation ? (
-                <div className="flex items-center gap-3 font-mono text-xs">
-                  <div className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
-                    Clarity: {speechEvaluation.clarity}%
-                  </div>
-                  <div className="px-3 py-1.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-800 font-bold">
-                    Word Order: {speechEvaluation.wordOrder}%
-                  </div>
-                </div>
-              ) : (
-                <span className="text-xs font-mono text-slate-400">
-                  Ready to test
-                </span>
               )}
             </div>
+          </div>
 
+          {/* User Response Studio */}
+          <div className="bg-white rounded-2xl border border-border-subtle shadow-xs p-4 sm:p-5 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mic className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 font-sans">
+                  Your Voice & Response Options
+                </h3>
+              </div>
+              <span className="text-[10px] text-slate-500 font-semibold font-mono">
+                SELECT OR SPEAK
+              </span>
+            </div>
+
+            {/* Options List */}
+            <div className="space-y-3">
+              {currentScenario.options.map((opt) => {
+                const isSelected = selectedOptionId === opt.id;
+                return (
+                  <div
+                    key={opt.id}
+                    onClick={() => {
+                      setSelectedOptionId(opt.id);
+                      setSpeechEvaluation({
+                        clarity: opt.clarityScore,
+                        wordOrder: opt.wordOrderScore,
+                        feedback: opt.feedbackMsg
+                      });
+                    }}
+                    className={`p-3.5 sm:p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
+                      isSelected
+                        ? 'bg-emerald-50/70 border-emerald-500 shadow-xs ring-2 ring-emerald-500/10'
+                        : 'bg-white border-border-subtle hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                          isSelected ? 'border-emerald-600 bg-emerald-600' : 'border-slate-300 bg-white'
+                        }`}>
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </span>
+                        <span className="text-xs font-bold text-slate-900 font-sans">
+                          {opt.label}
+                        </span>
+                        {opt.recommended && (
+                          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold font-mono">
+                            RECOMMENDED SENIOR
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayOption(opt.germanText);
+                        }}
+                        className="text-emerald-600 hover:text-emerald-700 p-1 cursor-pointer shrink-0"
+                        title="Hear Option Audio"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-slate-900 font-medium leading-relaxed pl-5 sm:pl-6 font-sans">
+                      "{opt.germanText}"
+                    </p>
+
+                    {isTamilActive && opt.tamilText && (
+                      <p className="text-xs text-slate-600 pl-5 sm:pl-6 font-sans">
+                        {opt.tamilText}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Voice Record Action Bar */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={handleToggleRecord}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer font-sans ${
+                  isRecording
+                    ? 'bg-rose-600 text-white animate-pulse ring-4 ring-rose-500/30'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                }`}
+              >
+                <Mic className="w-4 h-4" />
+                <span>{isRecording ? 'Listening to speech (Recording DE)...' : 'Practice Speaking This Response (Mic)'}</span>
+              </button>
+            </div>
+
+            {/* Speech Evaluation Score Card */}
             {speechEvaluation && (
-              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 font-mono text-xs text-emerald-800 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>{speechEvaluation.feedback}</span>
+              <div className="p-4 rounded-xl bg-slate-50 border border-border-subtle flex flex-col gap-3 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <span className="text-sm font-bold text-slate-900 font-sans">
+                      AI Recruiter & Grammar Score
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 font-mono">
+                    Score: {speechEvaluation.clarity}%
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="p-2 rounded-lg bg-white border border-border-subtle">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold block font-mono">Grammar</span>
+                    <span className="font-bold text-slate-900 font-mono">{speechEvaluation.clarity}%</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white border border-border-subtle">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold block font-mono">Tone Level</span>
+                    <span className="font-bold text-sky-700 font-mono">B2+ Senior</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white border border-border-subtle">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold block font-mono">Word Order</span>
+                    <span className="font-bold text-emerald-700 font-mono">{speechEvaluation.wordOrder}%</span>
+                  </div>
+                </div>
+                <p className="text-xs text-emerald-900 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200 font-sans">
+                  {speechEvaluation.feedback}
+                </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right 4 Cols: Standup Quick Anchors & German Grammar Rules */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Standup Quick Anchors (Common Workplace German Phrases) */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3">
+        {/* RIGHT COLUMN: Standup Anchors (5 Cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-4 min-w-0">
+          <div className="bg-white rounded-2xl border border-border-subtle shadow-xs p-4 sm:p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-emerald-700 font-bold uppercase tracking-wider">
-                Standup Quick Anchors
+              <span className="text-xs font-bold uppercase tracking-wider text-sky-700 font-mono">
+                Senior DevOps Standup Anchors
               </span>
-              <span className="font-mono text-[10px] text-slate-400">
-                CLICK TO LISTEN
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold font-mono">
+                GERMAN RITUALS
               </span>
             </div>
 
-            <p className="text-xs text-slate-600">
-              Commonly used phrases across German software and cloud engineering teams:
-            </p>
-
-            <div className="space-y-2.5 pt-1">
-              {STANDUP_QUICK_ANCHORS.map((item, idx) => (
+            <div className="space-y-2.5">
+              {STANDUP_QUICK_ANCHORS.map((anchor, idx) => (
                 <div
                   key={idx}
-                  onClick={() => handlePlayAnchor(item.german)}
-                  className="p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 cursor-pointer transition-all flex flex-col gap-1 group shadow-xs"
+                  className="p-3 rounded-xl bg-slate-50 border border-border-subtle flex items-start justify-between gap-3 hover:border-slate-300 transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-slate-900 group-hover:text-emerald-700 leading-snug">
-                      "{item.german}"
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase font-mono">
+                      {anchor.english}
                     </span>
-                    <Volume2 className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 shrink-0" />
+                    <p className="text-xs sm:text-sm text-slate-900 font-medium font-sans">
+                      "{anchor.german}"
+                    </p>
+                    {isTamilActive && anchor.tamil && (
+                      <p className="text-xs text-slate-500 font-sans">
+                        {anchor.tamil}
+                      </p>
+                    )}
                   </div>
-
-                  <p className="text-xs text-amber-700 font-medium">
-                    {item.tamil}
-                  </p>
-
-                  <p className="text-[11px] text-slate-500">
-                    {item.english}
-                  </p>
+                  <button
+                    onClick={() => handlePlayAnchor(anchor.german)}
+                    className="p-1.5 text-emerald-700 hover:text-emerald-800 bg-white rounded-lg border border-border-subtle shadow-2xs cursor-pointer shrink-0"
+                    title="Hear Audio"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* German DevOps Grammatik Rules Engine */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3">
-            <span className="font-mono text-xs text-sky-700 font-bold uppercase tracking-wider">
-              Workplace Grammar Rules
-            </span>
-
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <strong className="text-emerald-700 font-mono block mb-1">
-                  1. Perfekt in Standups (haben/sein + Partizip II):
-                </strong>
-                <p className="text-slate-600 leading-relaxed">
-                  Never use Präteritum in spoken standups. Say:
-                  <br />
-                  <span className="text-slate-900 font-mono">
-                    "Ich <strong className="text-emerald-700">habe</strong> die Pipeline <strong className="text-emerald-700">optimiert</strong>"
-                  </span>
-                  <br />
-                  (not "Ich optimierte die Pipeline").
-                </p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <strong className="text-sky-700 font-mono block mb-1">
-                  2. Modalverben (sollten, müssen, können):
-                </strong>
-                <p className="text-slate-600 leading-relaxed">
-                  Infinitiv locks at the end:
-                  <br />
-                  <span className="text-slate-900 font-mono">
-                    "Wir <strong className="text-sky-700">müssen</strong> den Cluster <strong className="text-sky-700">neustarten</strong>."
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            {/* Quick Verb Placement Mini-Interactive Test */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-2 mt-1">
-              <span className="font-mono text-[10px] text-amber-700 font-bold uppercase">
-                QUICK VERB PLACEMENT CHECK:
-              </span>
-              <p className="font-mono text-xs text-slate-900">
-                "Heute werde ich das Deployment..."
-              </p>
-
-              <div className="flex gap-2 pt-1">
-                {['fertigstellen', 'fertiggestellt'].map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => {
-                      setTestVerbPlaced(opt);
-                      if (opt === 'fertigstellen') {
-                        setTestResult('correct');
-                      } else {
-                        setTestResult('wrong');
-                      }
-                    }}
-                    className={`px-3 py-1.5 rounded-lg font-mono text-xs border transition-colors shadow-xs ${
-                      testVerbPlaced === opt
-                        ? testResult === 'correct'
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-400 font-bold'
-                          : 'bg-rose-50 text-rose-800 border-rose-400 font-bold'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-
-              {testResult === 'correct' && (
-                <span className="text-[11px] font-mono text-emerald-700 font-semibold">
-                  ✓ Correct! "werden + Infinitiv" requires "fertigstellen".
-                </span>
-              )}
-              {testResult === 'wrong' && (
-                <span className="text-[11px] font-mono text-rose-700 font-semibold">
-                  ✗ Futur I requires the infinitive form!
-                </span>
-              )}
             </div>
           </div>
         </div>

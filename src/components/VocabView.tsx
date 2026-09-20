@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  Search, 
   Volume2, 
   Mic, 
   Play, 
@@ -8,13 +7,14 @@ import {
   SkipBack, 
   SkipForward, 
   Repeat, 
-  BookOpen, 
-  Bookmark,
-  CheckCircle2, 
-  Info, 
-  Sparkles,
-  Terminal,
-  Clock
+  Star, 
+  Search, 
+  X, 
+  Sparkles, 
+  Terminal, 
+  Layers, 
+  CheckCircle2,
+  Bookmark
 } from 'lucide-react';
 import { VocabItem, VocabCategory, UserStats } from '../types';
 import { VOCABULARY_LIST } from '../data/vocabData';
@@ -23,11 +23,13 @@ import { speakGerman, speakTamil, stopSpeech } from '../utils/speech';
 interface VocabViewProps {
   stats: UserStats;
   onUpdateStats: (newStats: Partial<UserStats>) => void;
+  isTamilActive?: boolean;
 }
 
 export const VocabView: React.FC<VocabViewProps> = ({
   stats,
-  onUpdateStats
+  onUpdateStats,
+  isTamilActive = true
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<VocabCategory>('all');
@@ -106,7 +108,8 @@ export const VocabView: React.FC<VocabViewProps> = ({
         xp: Math.min(stats.maxXp, stats.xp + 15),
         techVocabLearned: Math.min(stats.totalVocab, stats.techVocabLearned + 1),
         pronunciationScore: stats.pronunciationScore === 0 ? score : Math.round((stats.pronunciationScore + score) / 2),
-        phoneticsHours: parseFloat((stats.phoneticsHours + 0.1).toFixed(1))
+        phoneticsHours: parseFloat((stats.phoneticsHours + 0.1).toFixed(1)),
+        streakDays: Math.max(1, stats.streakDays)
       });
     }, 2500);
   };
@@ -131,395 +134,382 @@ export const VocabView: React.FC<VocabViewProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 max-w-[1440px] mx-auto pb-32">
-      {/* Header Info */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-[11px] font-bold border border-emerald-200">
-              SRE-01 RUNBOOK
-            </span>
-            <span className="text-slate-400 font-mono text-xs">•</span>
-            <span className="text-slate-600 font-mono text-xs">
-              TECHNICAL GERMAN FOR CLOUD PLATFORM ENGINEERS
-            </span>
+    <div className="w-full flex flex-col gap-5 sm:gap-6 max-w-[1320px] mx-auto pb-44">
+      {/* Top Header & Search Section */}
+      <section className="w-full p-4 sm:p-6 bg-white border border-border-subtle shadow-xs rounded-2xl flex flex-col gap-4 sm:gap-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-col gap-1 max-w-3xl">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                MODUL // SRE-01
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-amber-800 font-semibold">
+                PROD INCIDENT RUNBOOK PHRASING
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-sans">
+              Tech Vocab & Terminal Lexicon <span className="font-normal text-slate-500 text-base sm:text-lg">/ Interactive Phrasing Studio</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
+              Master precise SRE, Kubernetes, and Cloud architecture terminology in German. Powered by phonetics, contextual enterprise Jira/Slack telemetry sentences, and direct English technical mappings.
+            </p>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mt-1">
-            DevOps Lexicon: Core Vocabulary <span className="text-slate-500 text-lg font-normal">/ கணிணி சொல்வங்கி</span>
-          </h1>
+
+          {/* Gender Color Legend Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 bg-slate-50 p-2 rounded-xl border border-border-subtle shadow-2xs">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200">
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-600 shadow-xs" />
+              <span className="text-[10px] text-sky-900 font-bold uppercase font-mono">DER · Maskulin</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-600 shadow-xs" />
+              <span className="text-[10px] text-rose-900 font-bold uppercase font-mono">DIE · Feminin</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-xs" />
+              <span className="text-[10px] text-amber-900 font-bold uppercase font-mono">DAS · Neutrum</span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-mono text-slate-600 shadow-xs">
-            Showing <strong className="text-emerald-700">{filteredVocab.length}</strong> of {VOCABULARY_LIST.length} Words
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-slate-50 p-2 rounded-xl border border-border-subtle shadow-2xs">
+          <div className="relative flex-1 flex items-center">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search German (Ausfall, Skalierbarkeit) or English (Outage, Bottleneck)..."
+              className="w-full bg-white text-slate-900 text-xs sm:text-sm pl-10 pr-9 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-2xs placeholder:text-slate-400 font-sans"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="text-slate-400 hover:text-slate-700 absolute right-3 cursor-pointer p-0.5"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0 px-3 py-2 bg-white rounded-lg text-slate-700 text-xs border border-border-subtle shadow-2xs">
+            <Terminal className="w-3.5 h-3.5 text-sky-600" />
+            <span className="text-[10px] font-bold font-mono">DE / EN SRE INDEXED</span>
+          </div>
+        </div>
+
+        {/* Category Tabs Filter */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+              selectedCategory === 'all'
+                ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                : 'bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 border border-border-subtle shadow-2xs'
+            }`}
+          >
+            <span>All Words</span>
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono ${
+              selectedCategory === 'all' ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'
+            }`}>
+              {VOCABULARY_LIST.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSelectedCategory('k8s')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+              selectedCategory === 'k8s'
+                ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                : 'bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 border border-border-subtle shadow-2xs'
+            }`}
+          >
+            <span>Kubernetes & Cloud</span>
+            <span className="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 text-[10px] font-bold font-mono">
+              {VOCABULARY_LIST.filter(v => v.category === 'k8s').length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSelectedCategory('cicd')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+              selectedCategory === 'cicd'
+                ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                : 'bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 border border-border-subtle shadow-2xs'
+            }`}
+          >
+            <span>CI/CD & Git</span>
+            <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 text-[10px] font-bold font-mono">
+              {VOCABULARY_LIST.filter(v => v.category === 'cicd').length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSelectedCategory('sre')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+              selectedCategory === 'sre'
+                ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                : 'bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 border border-border-subtle shadow-2xs'
+            }`}
+          >
+            <span>SRE & Incidents</span>
+            <span className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-200 text-[10px] font-bold font-mono">
+              {VOCABULARY_LIST.filter(v => v.category === 'sre').length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSelectedCategory('security')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+              selectedCategory === 'security'
+                ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                : 'bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 border border-border-subtle shadow-2xs'
+            }`}
+          >
+            <span>Security & Compliance</span>
+            <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-bold font-mono">
+              {VOCABULARY_LIST.filter(v => v.category === 'security').length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSelectedCategory('standup')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+              selectedCategory === 'standup'
+                ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                : 'bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 border border-border-subtle shadow-2xs'
+            }`}
+          >
+            <span>Standup & Rituals</span>
+            <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200 text-[10px] font-bold font-mono">
+              {VOCABULARY_LIST.filter(v => v.category === 'standup').length}
+            </span>
+          </button>
+        </div>
+      </section>
+
+      {/* Vocabulary Card Grid */}
+      <section className="w-full flex flex-col gap-4">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">
+            Displaying {filteredVocab.length} Lexicon Entries
+          </span>
+          <span className="text-xs text-slate-500">
+            Click speaker to hear native audio
           </span>
         </div>
-      </div>
 
-      {/* Search & Category Filter Row */}
-      <div className="flex flex-col gap-4">
-        {/* Search Bar */}
-        <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by German, English, or Tamil (e.g. Ausfall, Bottleneck, முடக்கம், Bereitstellung)..."
-            className="w-full pl-12 pr-10 py-3 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-600 transition-colors font-sans text-sm md:text-base shadow-xs"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-400 hover:text-slate-700"
-            >
-              CLEAR
-            </button>
-          )}
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+          {filteredVocab.map((item) => {
+            const isBookmarked = stats.bookmarkedVocabIds.includes(item.id);
+            const isSelected = selectedWord.id === item.id;
+            const score = recordedScore[item.id];
+            const isRecordingThis = recordingWordId === item.id;
 
-        {/* Category Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none font-mono text-xs">
-          {[
-            { id: 'all', label: `All (${VOCABULARY_LIST.length})` },
-            { id: 'k8s', label: 'Kubernetes & Cloud' },
-            { id: 'cicd', label: 'CI/CD & Git' },
-            { id: 'sre', label: 'Monitoring & SRE' },
-            { id: 'security', label: 'Security & IAM' },
-            { id: 'standup', label: 'Daily Standup' },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id as VocabCategory)}
-              className={`px-3.5 py-1.5 rounded-lg whitespace-nowrap transition-all border ${
-                selectedCategory === cat.id
-                  ? 'bg-slate-900 text-white border-slate-900 font-bold shadow-xs'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-      </div>
+            // Gender badge colors
+            const genderBadge = item.gender === 'DER'
+              ? 'bg-sky-50 text-sky-800 border-sky-200'
+              : item.gender === 'DIE'
+              ? 'bg-rose-50 text-rose-800 border-rose-200'
+              : 'bg-amber-50 text-amber-900 border-amber-200';
 
-      {/* Main Grid: 8 Columns Word Cards + 4 Columns Right Grammar Cheat Sheets */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Vocabulary Word Cards Grid */}
-        <div className="lg:col-span-8 flex flex-col gap-4">
-          {filteredVocab.length === 0 ? (
-            <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <Info className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-              <p className="text-slate-900 font-mono text-sm">No vocabulary found for "{searchQuery}"</p>
-              <button
-                onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
-                className="mt-3 px-4 py-1.5 rounded-lg bg-slate-900 text-white font-mono text-xs shadow-xs"
+            return (
+              <article
+                key={item.id}
+                onClick={() => setSelectedWord(item)}
+                className={`p-4 sm:p-5 rounded-2xl bg-white border transition-all shadow-xs flex flex-col justify-between gap-4 cursor-pointer relative group ${
+                  isSelected
+                    ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md'
+                    : 'border-border-subtle hover:border-slate-300'
+                }`}
               >
-                Reset Filters
-              </button>
-            </div>
-          ) : (
-            filteredVocab.map((item) => {
-              const isBookmarked = stats.bookmarkedVocabIds.includes(item.id);
-              const isSelected = selectedWord.id === item.id;
-              const isRecordingThis = recordingWordId === item.id;
-              const recordedScoreVal = recordedScore[item.id];
-
-              return (
-                <div
-                  key={item.id}
-                  className={`p-5 rounded-2xl bg-white border transition-all shadow-xs flex flex-col gap-4 relative group ${
-                    isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  {/* Card Header: Gender badge, Word, IPA, Audio Trigger, Bookmark */}
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex flex-col gap-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {/* Gender Badge */}
-                        <span
-                          className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-extrabold uppercase border ${
-                            item.gender === 'DER'
-                              ? 'bg-sky-50 text-sky-700 border-sky-200'
-                              : item.gender === 'DIE'
-                              ? 'bg-rose-50 text-rose-700 border-rose-200'
-                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          }`}
-                        >
-                          {item.articleLabel}
-                        </span>
-
-                        {item.grammaticalNote && (
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono text-[10px] border border-slate-200">
-                            {item.grammaticalNote}
-                          </span>
-                        )}
-
-                        <span className="text-slate-500 font-mono text-[11px]">
-                          {item.plural}
-                        </span>
-                      </div>
-
-                      {/* Main Word */}
-                      <div className="flex items-baseline gap-3 mt-1 flex-wrap">
-                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-                          {item.word}
-                        </h2>
-                        <span className="font-mono text-xs text-slate-500">
-                          {item.ipa}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Audio & Bookmark Actions */}
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button
-                        onClick={() => playWordAudio(item, 1.0)}
-                        className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-emerald-700 border border-slate-200 transition-colors shadow-xs"
-                        title="Listen Normal Speed (1.0x)"
-                      >
-                        <Volume2 className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        onClick={() => playWordAudio(item, 0.75)}
-                        className="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-sky-700 font-mono text-[11px] border border-slate-200 transition-colors shadow-xs"
-                        title="Slow Speed (0.75x)"
-                      >
-                        0.75x
-                      </button>
-
-                      <button
-                        onClick={() => toggleBookmark(item.id)}
-                        className={`p-2 rounded-xl border transition-colors shadow-xs ${
-                          isBookmarked
-                            ? 'bg-amber-50 text-amber-600 border-amber-300'
-                            : 'bg-slate-100 text-slate-400 border-slate-200 hover:text-slate-600'
-                        }`}
-                        title={isBookmarked ? 'Bookmarked' : 'Bookmark word'}
-                      >
-                        <Bookmark className="w-4 h-4" fill={isBookmarked ? '#d97706' : 'transparent'} />
-                      </button>
-                    </div>
+                {/* Card Top Meta: Gender + Category + Bookmark */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono border ${genderBadge}`}>
+                      {item.articleLabel}
+                    </span>
+                    {item.grammaticalNote && (
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-mono font-medium">
+                        {item.grammaticalNote}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Dual Translations (English + Tamil with Transliteration) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <div>
-                      <span className="font-mono text-[10px] text-sky-700 font-bold block uppercase mb-0.5">
-                        ENGLISH
-                      </span>
-                      <p className="text-sm font-semibold text-slate-900">
-                        {item.english}
-                      </p>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[10px] text-amber-700 font-bold block uppercase mb-0.5">
-                          தமிழ் (TAMIL)
-                        </span>
-                        <button
-                          onClick={() => playTamilAudio(item.tamil)}
-                          className="text-[10px] font-mono text-amber-700 hover:underline"
-                        >
-                          🔊 உச்சரிப்பு
-                        </button>
-                      </div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        {item.tamil}
-                      </p>
-                      {item.tamilTranslit && (
-                        <p className="text-xs text-slate-500 font-mono mt-0.5">
-                          {item.tamilTranslit}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Enterprise Log Context / Real Workplace Sentence */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col gap-2">
-                    <div className="flex items-center justify-between font-mono text-[10px] text-slate-500">
-                      <span className="text-emerald-700 font-bold flex items-center gap-1">
-                        <Terminal className="w-3 h-3 text-emerald-600" />
-                        {item.logContextTitle}
-                      </span>
-                      <button
-                        onClick={() => playSentenceAudio(item)}
-                        className="flex items-center gap-1 text-sky-700 hover:underline"
-                      >
-                        <Volume2 className="w-3 h-3" />
-                        <span>Listen Sentence</span>
-                      </button>
-                    </div>
-
-                    <p className="font-mono text-xs md:text-sm text-slate-900 leading-relaxed">
-                      "{item.germanSentence.split(item.highlightWord)[0]}
-                      <span className="text-emerald-700 font-bold underline decoration-emerald-500">
-                        {item.highlightWord}
-                      </span>
-                      {item.germanSentence.split(item.highlightWord)[1]}"
-                    </p>
-
-                    <div className="text-xs text-slate-600 border-t border-slate-200 pt-2 flex flex-col gap-1">
-                      <p>
-                        <strong className="text-slate-400 font-mono text-[10px]">EN:</strong> {item.englishSentence}
-                      </p>
-                      <p>
-                        <strong className="text-slate-400 font-mono text-[10px]">TA:</strong> {item.tamilSentence}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Pronunciation Recording Test Row */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleRecordPractice(item)}
-                        disabled={isRecordingThis}
-                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-mono text-xs font-semibold border transition-all shadow-xs ${
-                          isRecordingThis
-                            ? 'bg-rose-600 text-white border-rose-600 animate-pulse'
-                            : 'bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200'
-                        }`}
-                      >
-                        <Mic className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{isRecordingThis ? 'Listening in German...' : 'Record Voice Test'}</span>
-                      </button>
-
-                      {recordedScoreVal && (
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-xs font-bold border border-emerald-200 flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          {recordedScoreVal}% Match
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="font-mono text-xs text-slate-500 flex items-center gap-2">
-                      <span>Benchmark: <strong className="text-amber-700">{item.pronunciationBenchmark}%</strong></span>
-                      <span>•</span>
-                      <span className="text-emerald-700 font-semibold">{item.feedbackTip}</span>
-                    </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBookmark(item.id);
+                      }}
+                      className="p-1 text-slate-400 hover:text-amber-500 transition-colors cursor-pointer"
+                      title={isBookmarked ? 'Remove Bookmark' : 'Bookmark Term'}
+                    >
+                      <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
+                    </button>
                   </div>
                 </div>
-              );
-            })
-          )}
+
+                {/* Primary Term Word & IPA Phonetics */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-sans">
+                      {item.word}
+                    </h2>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        playWordAudio(item, 1.0);
+                      }}
+                      className="w-9 h-9 rounded-xl bg-slate-50 border border-border-subtle hover:bg-emerald-600 hover:text-white text-emerald-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0"
+                      title="Play German Audio"
+                      aria-label={`Play audio for ${item.word}`}
+                    >
+                      <Volume2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-mono text-sky-800 bg-sky-50/70 px-2 py-0.5 rounded border border-sky-200">
+                      {item.ipa}
+                    </span>
+                    {item.plural && (
+                      <span className="text-[11px] text-slate-500 font-mono">
+                        {item.plural}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* English & Tamil Translation Mappings */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-border-subtle flex flex-col gap-1.5 text-xs">
+                  <div className="flex items-start gap-2">
+                    <span className="text-[10px] text-sky-700 font-bold uppercase font-mono shrink-0 mt-0.5">EN:</span>
+                    <span className="font-semibold text-slate-900 font-sans">
+                      {item.english}
+                    </span>
+                  </div>
+                  {isTamilActive && (
+                    <div className="flex items-start gap-2 pt-1 border-t border-border-subtle">
+                      <span className="text-[10px] text-amber-700 font-bold uppercase font-mono shrink-0 mt-0.5">தமிழ்:</span>
+                      <div className="flex flex-col">
+                        <span className="text-slate-700 font-sans">
+                          {item.tamil}
+                        </span>
+                        {item.tamilTranslit && (
+                          <span className="text-[10px] text-slate-500 italic">
+                            {item.tamilTranslit}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Enterprise Incident Context Log */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-border-subtle flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-mono font-bold">
+                    <span>{item.logContextTitle}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        playSentenceAudio(item);
+                      }}
+                      className="text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5 cursor-pointer"
+                      title="Hear Full Sentence Audio"
+                    >
+                      <Volume2 className="w-3 h-3" />
+                      <span>LISTEN LOG</span>
+                    </button>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-900 font-medium font-sans leading-relaxed">
+                    "{item.germanSentence}"
+                  </p>
+
+                  <p className="text-xs text-slate-600 font-sans">
+                    {item.englishSentence}
+                  </p>
+
+                  {isTamilActive && item.tamilSentence && (
+                    <p className="text-xs text-slate-500 font-sans">
+                      {item.tamilSentence}
+                    </p>
+                  )}
+                </div>
+
+                {/* Interactive Mic Practice Action */}
+                <div className="flex flex-col gap-1.5 pt-1">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRecordPractice(item);
+                      }}
+                      className={`flex-1 py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-border-subtle transition-all shadow-2xs cursor-pointer ${
+                        isRecordingThis
+                          ? 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse font-bold'
+                          : 'bg-white hover:bg-slate-100 text-slate-900 font-semibold'
+                      }`}
+                    >
+                      <Mic className={`w-3.5 h-3.5 ${isRecordingThis ? 'text-rose-600 animate-spin' : 'text-rose-600'}`} />
+                      <span>{isRecordingThis ? 'Listening...' : 'Record My Voice'}</span>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        playWordAudio(item, 0.75);
+                      }}
+                      className="px-2.5 py-2 rounded-lg bg-white border border-border-subtle text-slate-700 hover:bg-slate-100 text-xs transition-colors shadow-2xs cursor-pointer"
+                      title="Play 0.75x Slow Speed"
+                    >
+                      0.75x 🐢
+                    </button>
+                  </div>
+                  {score && (
+                    <div className="text-xs text-emerald-800 p-1.5 rounded bg-emerald-50 border border-emerald-200 mt-1 font-sans">
+                      "{item.feedbackTip || 'Great German accent and sharp phonetic timing!'}"
+                    </div>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
+      </section>
 
-        {/* Right Sidebar: Gender Rules, German-Tamil Bridge & Weekly Goals */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* German Suffix Gender Cheat Sheet */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <h3 className="font-mono text-sm font-bold text-slate-900 uppercase tracking-wider">
-                DevOps Suffix Cheat Sheet
-              </h3>
-            </div>
-            <p className="text-xs text-slate-600 mb-4">
-              95% of technical German nouns follow these reliable ending patterns:
-            </p>
-
-            <div className="space-y-2.5 font-mono text-xs">
-              <div className="p-2.5 rounded-xl bg-rose-50/60 border border-rose-200/80 flex items-center justify-between">
-                <span className="text-rose-700 font-bold">DIE (-ung, -keit, -heit)</span>
-                <span className="text-slate-600">Bereitstellung, Skalierbarkeit</span>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-sky-50/60 border border-sky-200/80 flex items-center justify-between">
-                <span className="text-sky-700 font-bold">DER (-er, -or, -fall)</span>
-                <span className="text-slate-600">Lastverteiler, Ausfall, Blocker</span>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200/80 flex items-center justify-between">
-                <span className="text-emerald-700 font-bold">DAS (-ment, -ing, -tool)</span>
-                <span className="text-slate-600">Deployment, Tool, Peering</span>
-              </div>
-            </div>
-          </div>
-
-          {/* German-Tamil Grammar Bridge */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <div className="flex items-center gap-2 mb-3">
-              <BookOpen className="w-4 h-4 text-emerald-600" />
-              <h3 className="font-mono text-sm font-bold text-slate-900 uppercase tracking-wider">
-                German ⇄ Tamil Bridge
-              </h3>
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed mb-3">
-              Tamil and German share an intuitive structural pattern in dependent clauses: <strong>the main verb locks at the phrase conclusion (SOV)!</strong>
-            </p>
-
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 font-mono text-xs">
-              <div className="text-sky-800">
-                🇩🇪 "... weil der Worker-Node <span className="text-emerald-700 font-bold">abgestürzt ist</span>."
-              </div>
-              <div className="text-amber-800">
-                🇮🇳 "... ஒர்க்கர் நோட் <span className="text-emerald-700 font-bold">செயலிழந்ததால்</span>."
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              Unlike English (which puts verb before object), both Tamil and German subordinate grammar delay the action word until the predicate terminates.
-            </p>
-          </div>
-
-          {/* Weekly Pronunciation Goal Tracker */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-xs font-bold text-slate-900">
-                Weekly Vocab Audio Goal
-              </span>
-              <span className="font-mono text-xs text-emerald-700 font-bold">
-                {stats.techVocabLearned} / 50 Words
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 mb-3">
-              Maintain your daily Bavarian tech accent score above 85% to unlock mock interview sessions.
-            </p>
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-3 border border-slate-200/60">
-              <div 
-                className="bg-emerald-600 h-full rounded-full transition-all duration-500" 
-                style={{ width: `${Math.min(100, (stats.techVocabLearned / 50) * 100)}%` }} 
-              />
-            </div>
-            <span className="font-mono text-[11px] text-slate-500 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span>3 days remaining in current sprint</span>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Sticky Bottom Audio Player Dock */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg py-3 px-4 text-slate-900">
-        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+      {/* Floating Audio Studio Dock (Positioned above mobile nav on small screens) */}
+      <aside className="fixed bottom-16 xl:bottom-4 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-4xl bg-white/98 backdrop-blur-xl border border-border-strong rounded-2xl shadow-xl p-3 md:p-4 animate-in fade-in slide-in-from-bottom-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Active Word Info */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-emerald-700 shrink-0 font-mono text-xs font-bold shadow-xs">
-              {selectedWord.gender}
+          <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+              <Volume2 className="w-4 h-4" />
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-bold text-slate-900 truncate">
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-bold text-slate-900 text-xs sm:text-sm truncate font-sans">
                   {selectedWord.word}
                 </span>
-                <span className="font-mono text-xs text-slate-500 hidden sm:inline">
+                <span className="text-[11px] text-sky-800 bg-slate-50 px-1.5 py-0.2 rounded border border-border-subtle font-mono truncate">
                   {selectedWord.ipa}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 truncate">
-                {selectedWord.english} • <span className="text-amber-700">{selectedWord.tamil}</span>
-              </p>
+              <span className="text-[11px] text-slate-500 truncate font-sans">
+                {selectedWord.english} {isTamilActive && `• ${selectedWord.tamil}`}
+              </span>
             </div>
           </div>
 
-          {/* Transport Controls */}
-          <div className="flex items-center gap-3">
+          {/* Audio Playback Controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-center">
             <button
               onClick={handlePrevWord}
-              className="p-2 text-slate-500 hover:text-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
               title="Previous Word"
+              aria-label="Previous Word"
             >
               <SkipBack className="w-4 h-4" />
             </button>
@@ -533,16 +523,18 @@ export const VocabView: React.FC<VocabViewProps> = ({
                   playWordAudio(selectedWord);
                 }
               }}
-              className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700 transition-all shadow-xs"
-              title={isPlayingDock ? 'Pause' : 'Play German Audio'}
+              className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs flex items-center justify-center cursor-pointer"
+              title={isPlayingDock ? 'Pause' : 'Play Audio'}
+              aria-label={isPlayingDock ? 'Pause' : 'Play Audio'}
             >
-              {isPlayingDock ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white ml-0.5" />}
+              {isPlayingDock ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
             </button>
 
             <button
               onClick={handleNextWord}
-              className="p-2 text-slate-500 hover:text-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
               title="Next Word"
+              aria-label="Next Word"
             >
               <SkipForward className="w-4 h-4" />
             </button>
@@ -550,30 +542,24 @@ export const VocabView: React.FC<VocabViewProps> = ({
             {/* Loop Toggle */}
             <button
               onClick={() => setIsLooping(!isLooping)}
-              className={`p-2 rounded-lg border transition-colors ${
-                isLooping
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'text-slate-400 border-transparent hover:text-slate-700'
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                isLooping ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'text-slate-500 hover:bg-slate-100'
               }`}
-              title="Repeat Loop"
+              title="Toggle Infinite Audio Loop"
+              aria-label="Toggle Infinite Audio Loop"
             >
               <Repeat className="w-4 h-4" />
             </button>
-          </div>
 
-          {/* Speed & Tamil Tooltip Controls */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 font-mono text-xs">
-              {[0.75, 1.0, 1.25].map((spd) => (
+            {/* Speed Control Pill */}
+            <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-border-subtle">
+              {[0.8, 1.0, 1.25].map(spd => (
                 <button
                   key={spd}
-                  onClick={() => {
-                    setPlaybackSpeed(spd);
-                    if (isPlayingDock) playWordAudio(selectedWord, spd);
-                  }}
-                  className={`px-2 py-1 rounded transition-colors ${
+                  onClick={() => setPlaybackSpeed(spd)}
+                  className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-colors cursor-pointer ${
                     playbackSpeed === spd
-                      ? 'bg-white text-emerald-700 font-bold shadow-xs'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -582,16 +568,17 @@ export const VocabView: React.FC<VocabViewProps> = ({
               ))}
             </div>
 
+            {/* Play Whole Sentence Button */}
             <button
-              onClick={() => playTamilAudio(selectedWord.tamil)}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-amber-700 font-mono text-xs border border-slate-200 transition-colors flex items-center gap-1 shadow-xs"
-              title="Play Tamil Meaning Voice"
+              onClick={() => playSentenceAudio(selectedWord)}
+              className="hidden md:flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white border border-border-subtle text-slate-700 hover:bg-slate-50 text-xs font-semibold transition-colors shadow-2xs cursor-pointer font-sans"
             >
-              <span>தமிழ் TTS</span>
+              <Terminal className="w-3.5 h-3.5 text-sky-600" />
+              <span>Full Incident Log</span>
             </button>
           </div>
         </div>
-      </div>
+      </aside>
     </div>
   );
 };

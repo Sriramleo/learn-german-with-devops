@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TabType, UserStats } from './types';
-import { loadUserStats, saveUserStats, DEFAULT_USER_STATS } from './utils/storage';
+import { loadUserStats, saveUserStats, resetUserStats, calculateReadiness, fetchCloudStats, DEFAULT_USER_STATS } from './utils/storage';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { VocabView } from './components/VocabView';
@@ -20,28 +20,51 @@ export default function App() {
   const [stats, setStats] = useState<UserStats>(DEFAULT_USER_STATS);
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
+  const [isTamilActive, setIsTamilActive] = useState(true);
 
-  // Initialize stats from localStorage
+  // Initialize stats from localStorage and sync with MongoDB Atlas
   useEffect(() => {
     const loaded = loadUserStats();
     setStats(loaded);
+
+    fetchCloudStats().then(cloudStats => {
+      if (cloudStats) {
+        setStats(cloudStats);
+      }
+    });
   }, []);
 
   // Update user stats and persist
   const handleUpdateStats = (newPartial: Partial<UserStats>) => {
     setStats(prev => {
-      const updated = { ...prev, ...newPartial };
+      const merged = { ...prev, ...newPartial };
+      const { score, level } = calculateReadiness(merged);
+      const updated: UserStats = {
+        ...merged,
+        interviewReadiness: score,
+        readinessLevel: level
+      };
       saveUserStats(updated);
       return updated;
     });
+  };
+
+  // Reset progress completely to 0
+  const handleResetProgress = () => {
+    const fresh = resetUserStats();
+    setStats(fresh);
   };
 
   const handleToggleSound = () => {
     handleUpdateStats({ soundEnabled: !stats.soundEnabled });
   };
 
+  const handleToggleTamil = () => {
+    setIsTamilActive(prev => !prev);
+  };
+
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-800">
+    <div className="min-h-screen w-full bg-background text-text-primary flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-800">
       {/* Fixed Top Header */}
       <Header
         activeTab={activeTab}
@@ -50,15 +73,21 @@ export default function App() {
         onToggleSound={handleToggleSound}
         onOpenStreakModal={() => setIsStreakModalOpen(true)}
         onOpenQuizModal={() => setIsQuizModalOpen(true)}
+        onResetProgress={handleResetProgress}
+        isTamilActive={isTamilActive}
+        onToggleTamil={handleToggleTamil}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full pt-20 px-4 md:px-6 lg:px-8 max-w-[1440px] mx-auto pb-16">
+      {/* Main Content Area: padding bottom accommodates mobile/tablet bottom navigation */}
+      <main className="flex-1 w-full pt-18 sm:pt-20 px-3 sm:px-6 lg:px-8 max-w-[1440px] mx-auto pb-28 xl:pb-12">
         {activeTab === 'dashboard' && (
           <DashboardView
             stats={stats}
             onNavigate={setActiveTab}
             onOpenQuiz={() => setIsQuizModalOpen(true)}
+            onUpdateStats={handleUpdateStats}
+            onResetProgress={handleResetProgress}
+            isTamilActive={isTamilActive}
           />
         )}
 
@@ -66,6 +95,7 @@ export default function App() {
           <VocabView
             stats={stats}
             onUpdateStats={handleUpdateStats}
+            isTamilActive={isTamilActive}
           />
         )}
 
@@ -73,6 +103,8 @@ export default function App() {
           <PhraseDumpView
             stats={stats}
             onUpdateStats={handleUpdateStats}
+            isTamilActive={isTamilActive}
+            onToggleTamil={handleToggleTamil}
           />
         )}
 
@@ -80,6 +112,7 @@ export default function App() {
           <SentenceLabView
             stats={stats}
             onUpdateStats={handleUpdateStats}
+            isTamilActive={isTamilActive}
           />
         )}
 
@@ -87,6 +120,7 @@ export default function App() {
           <InterviewView
             stats={stats}
             onUpdateStats={handleUpdateStats}
+            isTamilActive={isTamilActive}
           />
         )}
       </main>

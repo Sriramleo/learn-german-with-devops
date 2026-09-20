@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Terminal, 
   Heart, 
-  Zap, 
   Volume2, 
   RotateCcw, 
   CheckCircle2, 
   XCircle, 
-  ArrowRight, 
-  Sparkles
+  ArrowRight,
+  Terminal,
+  Code2,
+  Sparkles,
+  HelpCircle,
+  Lightbulb
 } from 'lucide-react';
 import { UserStats } from '../types';
 import { SENTENCE_EXERCISES } from '../data/sentenceData';
@@ -17,11 +19,13 @@ import { speakGerman } from '../utils/speech';
 interface SentenceLabViewProps {
   stats: UserStats;
   onUpdateStats: (newStats: Partial<UserStats>) => void;
+  isTamilActive?: boolean;
 }
 
 export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
   stats,
-  onUpdateStats
+  onUpdateStats,
+  isTamilActive = true
 }) => {
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const currentEx = SENTENCE_EXERCISES[exerciseIndex] || SENTENCE_EXERCISES[0];
@@ -53,12 +57,10 @@ export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
     const firstEmptyIndex = placedSlots.findIndex(slot => slot === null);
     if (firstEmptyIndex === -1) return; // All slots filled
 
-    // Place into slot
     const nextSlots = [...placedSlots];
     nextSlots[firstEmptyIndex] = item.text;
     setPlacedSlots(nextSlots);
 
-    // Remove from available bank
     setAvailableBank(availableBank.filter(x => x.id !== item.id));
     setCheckStatus('idle');
   };
@@ -68,17 +70,14 @@ export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
     const tokenText = placedSlots[index];
     if (!tokenText) return;
 
-    // Find original bank item
     const originalItem = currentEx.wordBank.find(w => w.text === tokenText) || {
       id: tokenText,
       text: tokenText,
       tamilMeaning: ''
     };
 
-    // Return to bank
     setAvailableBank([...availableBank, originalItem]);
 
-    // Clear slot
     const nextSlots = [...placedSlots];
     nextSlots[index] = null;
     setPlacedSlots(nextSlots);
@@ -94,34 +93,30 @@ export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
 
   // Check the assembled sentence
   const handleCheckSentence = () => {
-    // Check if all slots are filled
     if (placedSlots.some(s => s === null)) {
       setFeedbackMessage('Please fill all slots before checking.');
       setCheckStatus('wrong');
       return;
     }
 
-    // Compare with targetSlots
     const isCorrect = placedSlots.every((val, idx) => val === currentEx.targetSlots[idx]);
 
     if (isCorrect) {
       setCheckStatus('correct');
       setFeedbackMessage('Hervorragend! Correct German syntax & verb position.');
-      // Reward XP & stats
       const newCompleted = stats.sentenceDrillsCompleted + 1;
       onUpdateStats({ 
         xp: Math.min(stats.maxXp, stats.xp + 20),
         sentenceDrillsCompleted: newCompleted,
         sentenceAccuracy: Math.min(100, Math.round((newCompleted / (newCompleted + 0.1)) * 100)),
+        streakDays: Math.max(1, stats.streakDays),
         lives: Math.min(5, stats.lives + 1)
       });
-      // Play full sentence audio
       const fullGerman = `${currentEx.prefixTokens.join(' ')} ${placedSlots.join(' ')}`;
       speakGerman(fullGerman, 1.0);
     } else {
       setCheckStatus('wrong');
       setFeedbackMessage('Incorrect word order. In German "weil" clauses, the conjugated verb locks at the absolute end!');
-      // Decrement life if > 0
       if (stats.lives > 0) {
         onUpdateStats({ lives: Math.max(0, stats.lives - 1) });
       }
@@ -133,7 +128,7 @@ export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
     if (exerciseIndex < SENTENCE_EXERCISES.length - 1) {
       setExerciseIndex(exerciseIndex + 1);
     } else {
-      setExerciseIndex(0); // Cycle or loop
+      setExerciseIndex(0);
     }
   };
 
@@ -143,154 +138,182 @@ export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
     speakGerman(fullGerman, 1.0);
   };
 
-  return (
-    <div className="w-full flex flex-col gap-6 max-w-[1440px] mx-auto pb-16">
-      {/* Top Exercise Header Bar */}
-      <div className="p-4 md:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-[11px] font-bold border border-emerald-200">
-              {currentEx.scriptName}
-            </span>
-            <span className="text-slate-400 font-mono text-xs">•</span>
-            <span className="text-sky-700 font-mono text-xs font-semibold">
-              {currentEx.tag}
-            </span>
-          </div>
+  const progressPercent = Math.round(((exerciseIndex + 1) / SENTENCE_EXERCISES.length) * 100);
 
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-            DevOps Sentence Lab <span className="text-slate-500 font-normal text-base md:text-lg">/ வாக்கிய அமைப்பு ஆய்வகம்</span>
+  return (
+    <div className="w-full flex flex-col gap-5 sm:gap-6 max-w-[1320px] mx-auto pb-16">
+      {/* Breadcrumb & Telemetry Header Banner */}
+      <section className="w-full p-4 sm:p-5 bg-white border border-border-subtle shadow-xs rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-700 mb-1 flex-wrap">
+            <span>Incident Response Lab</span>
+            <span className="text-slate-300">/</span>
+            <span>{currentEx.scriptName || 'INC-8492 // Pod Disruption & Node Eviction'}</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1" />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-sans">
+            Duolingo Tech Sentence Lab <span className="font-normal text-slate-500 text-base sm:text-lg">/ {currentEx.tag}</span>
           </h1>
         </div>
 
-        {/* Progress & Lives Bar */}
-        <div className="flex items-center gap-4 shrink-0">
-          {/* Exercise Index Counter */}
-          <div className="font-mono text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-            Exercise <strong className="text-emerald-700">0{currentEx.exerciseIndex}</strong> / 0{currentEx.totalExercises}
+        {/* Lives Counter & Topic Pill */}
+        <div className="flex items-center gap-3 bg-slate-50 px-3.5 py-2 rounded-xl border border-border-subtle shadow-2xs self-start md:self-auto">
+          <div className="flex items-center gap-1.5 text-rose-600 font-bold font-mono text-sm">
+            <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+            <span>{stats.lives || 5} Lives</span>
           </div>
+          <div className="h-6 w-px bg-slate-200" />
+          <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-bold uppercase font-mono">
+            {currentEx.runbookType || 'SEV-2 RUNBOOK'}
+          </span>
+        </div>
+      </section>
 
-          {/* Lives Counter */}
-          <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-            <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-            <span className="font-mono text-xs font-bold text-slate-950">
-              {stats.lives}
-            </span>
-          </div>
+      {/* Progress & Quick Telemetry Ribbon */}
+      <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white border border-border-subtle p-3.5 sm:p-4 rounded-xl shadow-xs">
+        <div className="flex items-center justify-between sm:justify-start gap-3">
+          <span className="text-xs font-bold text-slate-700 font-sans">
+            Exercise {exerciseIndex + 1} of {SENTENCE_EXERCISES.length}
+          </span>
+          <span className="text-[10px] text-slate-500 font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            {progressPercent}% COMPLETE
+          </span>
+        </div>
 
-          {/* XP Bounty */}
-          <div className="flex items-center gap-1 text-amber-700 font-mono text-xs font-bold bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 shadow-xs">
-            <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-            <span>+20 XP</span>
+        {/* Progress Bar Strip */}
+        <div className="flex-1 max-w-xl sm:mx-4">
+          <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-border-subtle">
+            <div
+              className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
+        </div>
+
+        {/* Action icons */}
+        <div className="flex items-center justify-end gap-2 shrink-0">
+          <button
+            onClick={playCurrentGermanSentence}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100 transition-colors text-xs font-semibold shadow-2xs cursor-pointer"
+            title="Hear Target German Audio"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+            <span className="hidden xs:inline">Listen Target</span>
+          </button>
+
+          <button
+            onClick={handleResetSlots}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white border border-border-subtle text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors text-xs shadow-2xs cursor-pointer"
+            title="Reset Tokens"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Grid: 8 Cols Sentence Construction + 4 Cols Grammar Telemetry */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Interactive Runbook Builder */}
-        <div className="lg:col-span-8 flex flex-col gap-5">
-          {/* Exercise Card */}
-          <div className="p-6 md:p-8 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-6 relative">
-            {/* Prompt Section: English & Tamil */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-amber-700 uppercase tracking-wider font-bold">
-                  {currentEx.runbookType}
-                </span>
-                <button
-                  onClick={playCurrentGermanSentence}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-emerald-700 font-mono text-xs border border-slate-200 transition-colors shadow-xs"
-                >
-                  <Volume2 className="w-3.5 h-3.5" />
-                  <span>Native Audio</span>
-                </button>
-              </div>
-
-              {/* English Prompt */}
-              <h2 className="text-lg md:text-xl font-bold text-slate-900 leading-snug">
-                "{currentEx.englishPrompt}"
-              </h2>
-
-              {/* Tamil Prompt */}
-              <p className="text-sm md:text-base text-amber-700 font-medium leading-relaxed">
-                "{currentEx.tamilPrompt}"
-              </p>
+      {/* Main 2-Column Lab Studio */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 sm:gap-6 items-start">
+        {/* LEFT COLUMN: The Interactive Sentence Builder (7 Cols) */}
+        <div className="xl:col-span-7 flex flex-col gap-5 min-w-0">
+          {/* Exercise Prompt Card */}
+          <div className="bg-white rounded-2xl border border-border-subtle shadow-xs p-4 sm:p-6 flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle pb-3">
+              <span className="text-xs font-bold text-slate-900 font-sans">
+                {currentEx.title}
+              </span>
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold font-mono">
+                {currentEx.patternType}
+              </span>
             </div>
 
-            {/* Compiled Terminal Output (Sentence Slot Assembly Area) */}
-            <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-3">
-              <div className="flex items-center justify-between font-mono text-[10px] text-slate-500">
-                <span className="flex items-center gap-1 text-emerald-700 font-semibold">
-                  <Terminal className="w-3.5 h-3.5 text-emerald-600" />
-                  COMPILED_GERMAN_RUNBOOK_ENTRY
-                </span>
-                <button
-                  onClick={handleResetSlots}
-                  className="flex items-center gap-1 text-slate-500 hover:text-slate-800 transition-colors"
-                  title="Reset Slots"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>RESET</span>
-                </button>
+            {/* English Prompt & Tamil Gloss */}
+            <div className="flex flex-col gap-2 bg-slate-50 border border-border-subtle rounded-xl p-3.5 sm:p-4">
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] text-sky-700 font-bold uppercase font-mono shrink-0 mt-0.5">EN:</span>
+                <p className="text-sm sm:text-base font-semibold text-slate-900 font-sans leading-relaxed">
+                  "{currentEx.englishPrompt}"
+                </p>
               </div>
 
-              {/* Assembled Sentence Tokens Flow */}
-              <div className="flex flex-wrap items-center gap-2 font-mono text-sm md:text-base leading-loose pt-2">
-                {/* Fixed Prefix Tokens */}
+              {isTamilActive && currentEx.tamilPrompt && (
+                <div className="flex items-start gap-2 pt-1 border-t border-border-subtle">
+                  <span className="text-[10px] text-amber-700 font-bold uppercase font-mono shrink-0 mt-0.5">தமிழ்:</span>
+                  <p className="text-xs sm:text-sm text-slate-600 font-sans">
+                    {currentEx.tamilPrompt}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* The Target Sentence Assembly Line */}
+            <div className="flex flex-col gap-2 pt-2">
+              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider font-mono">
+                Construct the German Clause (Auf Deutsch):
+              </span>
+
+              {/* Slot Row */}
+              <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-border-subtle min-h-[90px] flex flex-wrap items-center gap-2">
+                {/* Prefix tokens (Immutable) */}
                 {currentEx.prefixTokens.map((token, idx) => (
                   <span
-                    key={idx}
-                    className="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 border border-slate-300 select-none text-sm md:text-base font-medium"
+                    key={`prefix-${idx}`}
+                    className="px-3 py-2 rounded-xl bg-slate-200/80 text-slate-800 font-mono text-xs sm:text-sm font-semibold select-none border border-slate-300"
                   >
                     {token}
                   </span>
                 ))}
 
-                {/* Target Slots */}
-                {placedSlots.map((slotContent, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => handleSlotClick(idx)}
-                    className={`min-w-[120px] px-3 py-1.5 rounded-lg font-mono text-sm md:text-base font-bold transition-all cursor-pointer select-none flex items-center justify-center border shadow-xs ${
-                      slotContent
-                        ? checkStatus === 'correct'
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-500'
-                          : checkStatus === 'wrong'
-                          ? 'bg-rose-50 text-rose-800 border-rose-500'
-                          : 'bg-white text-sky-800 border-sky-300'
-                        : 'bg-white text-slate-400 border-dashed border-slate-300 hover:border-emerald-500'
+                {/* Target Editable Slots */}
+                {placedSlots.map((slotWord, slotIdx) => (
+                  <button
+                    key={`slot-${slotIdx}`}
+                    onClick={() => handleSlotClick(slotIdx)}
+                    className={`min-w-[80px] sm:min-w-[100px] h-10 px-3 rounded-xl border text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center cursor-pointer ${
+                      slotWord
+                        ? 'bg-emerald-50 text-emerald-900 border-emerald-500 shadow-2xs hover:bg-emerald-100'
+                        : 'bg-white border-dashed border-slate-300 text-slate-400 hover:border-slate-400'
                     }`}
+                    title={slotWord ? 'Click to remove token' : currentEx.slotHints[slotIdx] || 'Empty Slot'}
                   >
-                    {slotContent || currentEx.slotHints[idx]}
-                  </div>
+                    {slotWord ? (
+                      <span>{slotWord}</span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {currentEx.slotHints[slotIdx] || `[Slot ${slotIdx + 1}]`}
+                      </span>
+                    )}
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* Word Bank Area (Duolingo-style click to place tokens) */}
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                Available Word Bank Tokens (Click to place in order):
-              </span>
+            {/* Word Bank Available Tokens */}
+            <div className="flex flex-col gap-2 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider font-mono">
+                  Word Bank (வார்த்தை வங்கி) - Click to place:
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  {availableBank.length} remaining
+                </span>
+              </div>
 
-              <div className="flex flex-wrap gap-2.5 pt-1">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 p-3 rounded-xl bg-slate-50 border border-border-subtle min-h-[64px]">
                 {availableBank.length === 0 ? (
-                  <span className="font-mono text-xs text-slate-500 italic">
-                    All tokens placed in runbook slots above. Ready to verify!
+                  <span className="text-xs text-slate-400 italic">
+                    All words placed in sentence slots above. Click "Check Sentence" below!
                   </span>
                 ) : (
                   availableBank.map((item) => (
                     <button
                       key={item.id}
                       onClick={() => handleBankTokenClick(item)}
-                      className="group flex flex-col items-start px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all text-left shadow-xs active:scale-95"
+                      className="px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-slate-900 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 font-mono text-xs sm:text-sm font-bold shadow-2xs transition-all flex flex-col items-center cursor-pointer group"
                     >
-                      <span className="font-mono text-sm font-semibold text-slate-900 group-hover:text-emerald-700">
-                        {item.text}
-                      </span>
-                      {item.tamilMeaning && (
-                        <span className="text-[10px] text-slate-500 font-sans group-hover:text-slate-700">
+                      <span>{item.text}</span>
+                      {isTamilActive && item.tamilMeaning && (
+                        <span className="text-[9px] font-sans text-slate-500 group-hover:text-emerald-700 font-normal">
                           {item.tamilMeaning}
                         </span>
                       )}
@@ -300,156 +323,104 @@ export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
               </div>
             </div>
 
-            {/* Validation Feedback Banner */}
-            {checkStatus !== 'idle' && (
-              <div
-                className={`p-4 rounded-xl border flex items-start gap-3 transition-all ${
-                  checkStatus === 'correct'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                    : 'bg-rose-50 border-rose-300 text-rose-900'
-                }`}
-              >
-                {checkStatus === 'correct' ? (
-                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600" />
-                ) : (
-                  <XCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600" />
-                )}
-                <div>
-                  <h4 className="font-mono text-sm font-bold">
-                    {checkStatus === 'correct' ? 'Richtig! / மிகச் சரி!' : 'Syntax Error / தவறான வாக்கிய அமைப்பு'}
-                  </h4>
-                  <p className="text-xs md:text-sm mt-0.5 leading-relaxed">
-                    {feedbackMessage}
-                  </p>
+            {/* Feedback & Submission Bar */}
+            <div className="flex flex-col gap-3 pt-3 border-t border-border-subtle">
+              {checkStatus !== 'idle' && (
+                <div
+                  className={`p-3.5 rounded-xl border flex items-center gap-3 text-xs sm:text-sm animate-in fade-in ${
+                    checkStatus === 'correct'
+                      ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
+                      : 'bg-rose-50 text-rose-900 border-rose-300'
+                  }`}
+                >
+                  {checkStatus === 'correct' ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                  )}
+                  <span className="font-medium font-sans">{feedbackMessage}</span>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Action Bar (Check / Next / Skip) */}
-            <div className="flex items-center justify-between gap-4 pt-2 border-t border-slate-200">
-              <button
-                onClick={handleNextExercise}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-semibold border border-slate-200 transition-colors shadow-xs"
-              >
-                Skip / அடுத்தது
-              </button>
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  onClick={playCurrentGermanSentence}
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-border-subtle transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Volume2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Audio Hint</span>
+                </button>
 
-              <div className="flex items-center gap-3">
-                {checkStatus === 'correct' ? (
-                  <button
-                    onClick={handleNextExercise}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-xs font-bold transition-all shadow-xs"
-                  >
-                    <span>Next Exercise / தொடர்க</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                ) : (
+                {checkStatus !== 'correct' ? (
                   <button
                     onClick={handleCheckSentence}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-xs font-bold transition-all shadow-xs"
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer flex-1 sm:flex-initial text-center"
                   >
-                    <Terminal className="w-4 h-4" />
-                    <span>Prüfen / சரிபார்க்கவும்</span>
+                    Check Sentence (தீர்வை சரிபார்)
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNextExercise}
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial text-center animate-bounce"
+                  >
+                    <span>Next Drill</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Grammar & Tamil Structural Bridge Drawer */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <h3 className="font-mono text-sm font-bold text-slate-900">
-                {currentEx.explanationTitle}
-              </h3>
-            </div>
-
-            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-              {currentEx.explanationGerman}
-            </p>
-
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-amber-800 leading-relaxed font-sans">
-              {currentEx.explanationTamil}
             </div>
           </div>
         </div>
 
-        {/* Right Column: Telemetry & Sprint Metrics */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Incident Telemetry Card */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-4">
-            <span className="font-mono text-xs text-emerald-700 font-bold uppercase tracking-wider">
-              Telemetry & Metadata
-            </span>
-
-            <div className="space-y-3 font-mono text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                <span className="text-slate-500">DOMAIN:</span>
-                <span className="text-slate-900 font-bold">{currentEx.domain}</span>
-              </div>
-
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                <span className="text-slate-500">SUBDOMAIN:</span>
-                <span className="text-sky-700">{currentEx.subdomain}</span>
-              </div>
-
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                <span className="text-slate-500">CEFR LEVEL:</span>
-                <span className="text-emerald-700 font-bold">{currentEx.cefrLevel}</span>
-              </div>
-
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                <span className="text-slate-500">PATTERN:</span>
-                <span className="text-amber-700">{currentEx.patternType}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 14 Days Clean Streak Spark Chart */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold text-slate-900">
-                14-Day Sentence Streak
-              </span>
-              <span className="font-mono text-xs text-amber-700 font-bold">
-                {stats.streakDays > 0 ? `${stats.streakDays} Days On-Track` : '0 Days (Start Today)'}
-              </span>
+        {/* RIGHT COLUMN: Grammar Deep-Dive & Incident Context (5 Cols) */}
+        <div className="xl:col-span-5 flex flex-col gap-4 sm:gap-5 min-w-0">
+          {/* Explanation Card */}
+          <div className="bg-white rounded-2xl border border-border-subtle shadow-xs p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-center gap-2 text-emerald-800">
+              <Lightbulb className="w-5 h-5 text-amber-500" />
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 font-sans">
+                {currentEx.explanationTitle}
+              </h2>
             </div>
 
-            <div className="flex items-end justify-between gap-1 h-16 pt-2">
-              {(stats.streakDays > 0 
-                ? [65, 70, 75, 80, 85, 78, 90, 82, 88, 92, 95, 91, 94, 98] 
-                : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-              ).map((val, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className="w-full rounded-t bg-emerald-500 transition-all hover:bg-emerald-600"
-                    style={{ height: `${Math.max(4, (val / 100) * 48)}px`, opacity: val === 0 ? 0.25 : 1 }}
-                    title={`Day ${i + 1}: ${val}%`}
-                  />
-                  <span className="text-[9px] font-mono text-slate-400">{i + 1}</span>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-border-subtle flex flex-col gap-2">
+              <span className="text-[10px] text-slate-500 uppercase font-mono font-bold">
+                GERMAN SYNTAX RULE:
+              </span>
+              <p className="text-xs sm:text-sm text-slate-900 font-medium font-sans leading-relaxed">
+                {currentEx.explanationGerman}
+              </p>
+
+              {isTamilActive && currentEx.explanationTamil && (
+                <div className="pt-2 border-t border-border-subtle">
+                  <span className="text-[10px] text-amber-700 uppercase font-mono font-bold">
+                    தமிழ் விளக்கம்:
+                  </span>
+                  <p className="text-xs text-slate-600 font-sans mt-0.5">
+                    {currentEx.explanationTamil}
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
-          {/* Grammar Glossary Cheat Pill */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3">
-            <span className="font-mono text-xs text-slate-600 font-bold uppercase tracking-wider">
-              Quick Grammar Glossary
-            </span>
-
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                <strong className="text-sky-700 font-mono block">Subjekt (எழுவாய்):</strong>
-                <span className="text-slate-600">The entity executing the action (e.g. der Worker-Node).</span>
+          {/* Incident Runbook Terminal */}
+          <div className="bg-slate-900 text-white rounded-2xl border border-slate-800 shadow-md p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-slate-300 font-semibold ml-1">K8s Live Telemetry</span>
               </div>
+              <span className="text-emerald-400 font-mono text-[10px]">PASSIVE // SRE-A1</span>
+            </div>
 
-              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                <strong className="text-emerald-700 font-mono block">Prädikat am Ende (பயனிலை):</strong>
-                <span className="text-slate-600">In "weil" clauses, the conjugated verb is pushed to the conclusion!</span>
-              </div>
+            <div className="font-mono text-xs text-slate-300 space-y-1 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800 overflow-x-auto">
+              <p className="text-emerald-400">$ kubectl get pods -n production</p>
+              <p className="text-rose-400">auth-service-78f8   0/1   CrashLoopBackOff</p>
+              <p className="text-slate-500"># Action Plan: Pod neustarten weil Datenbank überlastet ist</p>
+              <p className="text-sky-300">$ echo "Syntax Check: SUCCESS"</p>
             </div>
           </div>
         </div>
