@@ -15,7 +15,8 @@ import {
   Users, 
   FileText,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Layers
 } from 'lucide-react';
 import { TabType, UserStats } from '../types';
 
@@ -191,7 +192,23 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <FileText className="w-3.5 h-3.5 text-amber-600" />
-              <span>Keyword & Phrase Dump</span>
+              <span>Phrases</span>
+            </button>
+
+            {/* 100 Spoken Patterns */}
+            <button
+              onClick={() => onTabChange('patterns')}
+              className={`px-3 py-1.5 transition-all text-xs font-medium rounded-lg flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeTab === 'patterns'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-emerald-600" />
+              <span>100 Patterns</span>
+              <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">
+                100 📘
+              </span>
             </button>
 
             {/* Tips & YouTube Guide (Zero-to-B1) */}
@@ -453,7 +470,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={() => onTabChange('phrase-dump')}
-          className={`flex flex-col items-center justify-center gap-0.5 py-1 px-2 rounded-lg transition-colors cursor-pointer min-w-[56px] ${
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 rounded-lg transition-colors cursor-pointer min-w-[50px] ${
             activeTab === 'phrase-dump' ? 'text-emerald-700 font-bold bg-emerald-50/60' : 'text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -462,8 +479,18 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <button
+          onClick={() => onTabChange('patterns')}
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 rounded-lg transition-colors cursor-pointer min-w-[50px] ${
+            activeTab === 'patterns' ? 'text-emerald-700 font-bold bg-emerald-50/60' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-emerald-600" />
+          <span className="text-[10px] font-medium">100 Patterns</span>
+        </button>
+
+        <button
           onClick={() => onTabChange('learning-tips')}
-          className={`flex flex-col items-center justify-center gap-0.5 py-1 px-2 rounded-lg transition-colors cursor-pointer min-w-[56px] ${
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 rounded-lg transition-colors cursor-pointer min-w-[50px] ${
             activeTab === 'learning-tips' ? 'text-amber-800 font-bold bg-amber-100' : 'text-slate-500 hover:text-slate-800'
           }`}
         >

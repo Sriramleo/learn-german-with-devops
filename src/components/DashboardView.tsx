@@ -23,7 +23,8 @@ import {
   Activity,
   CheckSquare,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Layers
 } from 'lucide-react';
 import { TabType, UserStats } from '../types';
 import { SKILL_TREE_MODULES } from '../data/quizData';
@@ -171,6 +172,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              <button 
+                onClick={() => onNavigate('patterns')}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>100 Spoken Patterns</span>
+                <span className="px-1.5 py-0.2 rounded bg-emerald-200 text-emerald-900 text-[10px] font-bold font-mono">
+                  100 📘
+                </span>
+              </button>
+
               <button 
                 onClick={() => onNavigate('learning-tips')}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
@@ -323,6 +335,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
         </div>
+      </section>
+
+      {/* 100 SPOKEN PATTERNS BLUEPRINT CARD */}
+      <section className="w-full p-4 sm:p-5 bg-white border border-emerald-200/80 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Layers className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 font-mono">
+                100 Spoken Patterns Workbook (A1–B1)
+              </span>
+              <span className="px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">
+                100 Formulas Included
+              </span>
+            </div>
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">
+              Dual Daily Life Anchors & SRE DevOps Workflows
+            </h3>
+            <p className="text-xs text-slate-500">
+              Master the German conversational formulas with 0.5x audio speed, clickable words, and interactive recitation drills.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onNavigate('patterns')}
+          className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer shrink-0 self-stretch sm:self-auto justify-center"
+        >
+          <span>Open 100 Patterns</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </section>
 
       {/* Metric Cards Strip (4-Pack) */}

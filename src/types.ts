@@ -1,4 +1,4 @@
-export type TabType = 'dashboard' | 'vocabulary' | 'phrase-dump' | 'sentence-lab' | 'interview-and-daily' | 'learning-tips';
+export type TabType = 'dashboard' | 'vocabulary' | 'phrase-dump' | 'patterns' | 'sentence-lab' | 'interview-and-daily' | 'learning-tips';
 
 export type ArticleGender = 'DER' | 'DIE' | 'DAS';
 
@@ -156,3 +156,29 @@ export interface QuizQuestion {
   explanation: string;
   xpBounty: number;
 }
+
+export type PatternCategory = 
+  | 'all'
+  | 'foundations' // Category 1: Absolute Beginner Foundations (#1-#20)
+  | 'cases'       // Category 2: Fixed Case & Verb Automations (#21-#40)
+  | 'daily'       // Category 3: Daily Life, Priorities & Needs (#41-#60)
+  | 'opinions'    // Category 4: Opinions, Certainty & Intentions (#61-#80)
+  | 'social';     // Category 5: Questions, Requests & Social Formulas (#81-#100)
+
+export interface PatternItem {
+  id: string;
+  patternNumber: number;
+  category: PatternCategory;
+  categoryName: string;
+  formula: string;
+  grammarNote: string;
+  anchorGerman: string;
+  anchorEnglish: string;
+  devopsGerman: string;
+  devopsEnglish: string;
+  tamil: string;
+  tamilTranslit?: string;
+  yourTurnPrompts: string[];
+  level: 'A1' | 'A2' | 'B1';
+}
+

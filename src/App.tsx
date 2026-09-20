@@ -10,6 +10,7 @@ import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { VocabView } from './components/VocabView';
 import { PhraseDumpView } from './components/PhraseDumpView';
+import { PatternsView } from './components/PatternsView';
 import { SentenceLabView } from './components/SentenceLabView';
 import { InterviewView } from './components/InterviewView';
 import { LearningTipsView } from './components/LearningTipsView';
@@ -102,6 +103,15 @@ export default function App() {
 
         {activeTab === 'phrase-dump' && (
           <PhraseDumpView
+            stats={stats}
+            onUpdateStats={handleUpdateStats}
+            isTamilActive={isTamilActive}
+            onToggleTamil={handleToggleTamil}
+          />
+        )}
+
+        {activeTab === 'patterns' && (
+          <PatternsView
             stats={stats}
             onUpdateStats={handleUpdateStats}
             isTamilActive={isTamilActive}
