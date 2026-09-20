@@ -22,7 +22,8 @@ import {
   Flame,
   Activity,
   CheckSquare,
-  RotateCcw
+  RotateCcw,
+  Sparkles
 } from 'lucide-react';
 import { TabType, UserStats } from '../types';
 import { SKILL_TREE_MODULES } from '../data/quizData';

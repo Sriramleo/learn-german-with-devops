@@ -14,7 +14,8 @@ import {
   Code2, 
   Users, 
   FileText,
-  RotateCcw
+  RotateCcw,
+  Sparkles
 } from 'lucide-react';
 import { TabType, UserStats } from '../types';
 

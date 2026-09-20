@@ -51,7 +51,7 @@ export function calculateReadiness(stats: UserStats): { score: number; level: st
 }
 
 const USER_ID_KEY = 'devdeutsch_user_id';
-const API_BASE = import.meta.env?.VITE_API_BASE_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5001' : '');
+const API_BASE = import.meta.env?.VITE_API_BASE_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://backend.sriramdevops.site');
 
 export function getUserId(): string {
   if (typeof window === 'undefined') return 'anonymous-user';
