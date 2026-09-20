@@ -171,6 +171,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <div className="flex items-center gap-2 flex-wrap">
               <button 
+                onClick={() => onNavigate('learning-tips')}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>Tips & YouTube Guides</span>
+              </button>
+
+              <button 
                 onClick={() => onNavigate('interview-and-daily')}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-border-subtle hover:bg-slate-50 text-sky-700 text-xs font-semibold transition-all shadow-2xs cursor-pointer"
               >
@@ -187,6 +195,129 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               >
                 <Terminal className="w-3.5 h-3.5 shrink-0" />
                 <span>Run Daily Review</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TODAY'S CLASS / TAGESLEKTION (ZERO-TO-B1 TRACK) */}
+      <section className="w-full p-5 sm:p-6 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 border border-amber-500/30 shadow-xl rounded-2xl text-white">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800">
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold mb-2">
+              <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+              <span>TODAY'S CLASS // TAGESLEKTION (ZERO TO B1)</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              Lektion 01: Greetings, Numbers & Your First Incident Command
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              Know zero German words? Start here. Listen at <span className="text-amber-400 font-bold">0.5x slow speed</span>, click individual words to hear them isolated, and practice out loud.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => onNavigate('vocabulary')}
+              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-lg transition-all"
+            >
+              <span>Open Vocab Studio</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onNavigate('learning-tips')}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-colors"
+            >
+              90-Day B1 Roadmap
+            </button>
+          </div>
+        </div>
+
+        {/* 3 Interactive Daily Blocks */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Block 1: Greetings */}
+          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase text-amber-400 font-mono">STEP 1: GREETINGS</span>
+                <span className="text-[10px] text-slate-400">Office / Standup</span>
+              </div>
+              <h3 className="text-base font-bold text-white mb-1">Guten Morgen zusammen!</h3>
+              <p className="text-xs text-slate-400 mb-3">Good morning everyone! / காலை வணக்கம்!</p>
+            </div>
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+              <button
+                onClick={() => speakGerman('Guten Morgen zusammen', 0.5)}
+                className="flex-1 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/30 flex items-center justify-center gap-1 transition-all"
+                title="Hear at 0.5x Slow Rate"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>0.5x Slow</span>
+              </button>
+              <button
+                onClick={() => speakGerman('Guten Morgen zusammen', 1.0)}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+              >
+                1.0x
+              </button>
+            </div>
+          </div>
+
+          {/* Block 2: Numbers */}
+          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase text-indigo-400 font-mono">STEP 2: NUMBERS</span>
+                <span className="text-[10px] text-slate-400">Port & Metrics</span>
+              </div>
+              <h3 className="text-base font-bold text-white mb-1">Port achttausendachtzig (8080)</h3>
+              <p className="text-xs text-slate-400 mb-3">Port 8080 / போர்ட் 8080</p>
+            </div>
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+              <button
+                onClick={() => speakGerman('Port achttausendachtzig', 0.5)}
+                className="flex-1 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 flex items-center justify-center gap-1 transition-all"
+                title="Hear at 0.5x Slow Rate"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>0.5x Slow</span>
+              </button>
+              <button
+                onClick={() => speakGerman('Port achttausendachtzig', 1.0)}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+              >
+                1.0x
+              </button>
+            </div>
+          </div>
+
+          {/* Block 3: Incident Sentence */}
+          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase text-emerald-400 font-mono">STEP 3: LIVE COMMAND</span>
+                <span className="text-[10px] text-slate-400">P1 Outage</span>
+              </div>
+              <h3 className="text-sm font-bold text-white mb-1 leading-snug">
+                Wir müssen sofort ein Failover einleiten.
+              </h3>
+              <p className="text-xs text-slate-400 mb-3">We must initiate a failover immediately.</p>
+            </div>
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+              <button
+                onClick={() => speakGerman('Wir müssen sofort ein Failover einleiten', 0.5)}
+                className="flex-1 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold border border-amber-500/30 flex items-center justify-center gap-1 transition-all"
+                title="Hear at 0.5x Slow Rate"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>0.5x Slow</span>
+              </button>
+              <button
+                onClick={() => speakGerman('Wir müssen sofort ein Failover einleiten', 1.0)}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+              >
+                1.0x
               </button>
             </div>
           </div>

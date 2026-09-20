@@ -192,6 +192,22 @@ export const Header: React.FC<HeaderProps> = ({
               <FileText className="w-3.5 h-3.5 text-amber-600" />
               <span>Keyword & Phrase Dump</span>
             </button>
+
+            {/* Tips & YouTube Guide (Zero-to-B1) */}
+            <button
+              onClick={() => onTabChange('learning-tips')}
+              className={`px-3 py-1.5 transition-all text-xs font-medium rounded-lg flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeTab === 'learning-tips'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Tips & YouTube Guide</span>
+              <span className="px-1.5 py-0.2 rounded bg-red-100 text-red-700 text-[9px] font-bold uppercase font-mono">
+                B1 🚀
+              </span>
+            </button>
           </nav>
 
           {/* Right Action Bar */}
@@ -442,6 +458,16 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <FileText className="w-4 h-4" />
           <span className="text-[10px] font-medium">Phrases</span>
+        </button>
+
+        <button
+          onClick={() => onTabChange('learning-tips')}
+          className={`flex flex-col items-center justify-center gap-0.5 py-1 px-2 rounded-lg transition-colors cursor-pointer min-w-[56px] ${
+            activeTab === 'learning-tips' ? 'text-amber-800 font-bold bg-amber-100' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-600" />
+          <span className="text-[10px] font-medium">Tips</span>
         </button>
       </nav>
     </>

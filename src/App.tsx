@@ -12,6 +12,7 @@ import { VocabView } from './components/VocabView';
 import { PhraseDumpView } from './components/PhraseDumpView';
 import { SentenceLabView } from './components/SentenceLabView';
 import { InterviewView } from './components/InterviewView';
+import { LearningTipsView } from './components/LearningTipsView';
 import { QuizModal } from './components/QuizModal';
 import { StreakModal } from './components/StreakModal';
 
@@ -122,6 +123,10 @@ export default function App() {
             onUpdateStats={handleUpdateStats}
             isTamilActive={isTamilActive}
           />
+        )}
+
+        {activeTab === 'learning-tips' && (
+          <LearningTipsView />
         )}
       </main>
 

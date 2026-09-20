@@ -112,12 +112,15 @@ export const PhraseDumpView: React.FC<PhraseDumpViewProps> = ({
 
   const categories: { id: PhraseCategory; label: string; count: number }[] = [
     { id: 'all', label: 'All Phrases', count: DEVOPS_PHRASES.length },
-    { id: 'incident', label: 'P1/P2 Incidents', count: DEVOPS_PHRASES.filter(p => p.category === 'incident').length },
-    { id: 'standup', label: 'Daily Standup', count: DEVOPS_PHRASES.filter(p => p.category === 'standup').length },
-    { id: 'codereview', label: 'PR & Code Review', count: DEVOPS_PHRASES.filter(p => p.category === 'codereview').length },
-    { id: 'architecture', label: 'Architecture & HA', count: DEVOPS_PHRASES.filter(p => p.category === 'architecture').length },
-    { id: 'workplace', label: 'Office & Coffee', count: DEVOPS_PHRASES.filter(p => p.category === 'workplace').length },
-    { id: 'idioms', label: 'German Idioms', count: DEVOPS_PHRASES.filter(p => p.category === 'idioms').length },
+    { id: 'greetings', label: '👋 Greetings', count: DEVOPS_PHRASES.filter(p => p.category === 'greetings').length },
+    { id: 'numbers', label: '🔢 Numbers & Metrics', count: DEVOPS_PHRASES.filter(p => p.category === 'numbers').length },
+    { id: 'general', label: '💬 General IT & Basics', count: DEVOPS_PHRASES.filter(p => p.category === 'general').length },
+    { id: 'incident', label: '🚨 P1/P2 Incidents', count: DEVOPS_PHRASES.filter(p => p.category === 'incident').length },
+    { id: 'standup', label: '☕ Daily Standup', count: DEVOPS_PHRASES.filter(p => p.category === 'standup').length },
+    { id: 'codereview', label: '🔍 PR & Code Review', count: DEVOPS_PHRASES.filter(p => p.category === 'codereview').length },
+    { id: 'architecture', label: '🏗️ Architecture & HA', count: DEVOPS_PHRASES.filter(p => p.category === 'architecture').length },
+    { id: 'workplace', label: '🏢 Office & Coffee', count: DEVOPS_PHRASES.filter(p => p.category === 'workplace').length },
+    { id: 'idioms', label: '💡 German Idioms', count: DEVOPS_PHRASES.filter(p => p.category === 'idioms').length },
   ];
 
   return (
@@ -319,14 +322,23 @@ export const PhraseDumpView: React.FC<PhraseDumpViewProps> = ({
                       <p className="text-sm sm:text-base font-bold text-slate-900 font-sans leading-relaxed">
                         "{item.german}"
                       </p>
-                      <button
-                        onClick={() => handlePlayAudio(item)}
-                        disabled={isPlaying}
-                        className="w-8 h-8 rounded-xl bg-slate-50 border border-border-subtle hover:bg-emerald-600 hover:text-white text-emerald-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer shrink-0 mt-0.5"
-                        title="Play German Pronunciation"
-                      >
-                        <Volume2 className={`w-4 h-4 ${isPlaying ? 'animate-pulse text-emerald-600' : ''}`} />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                        <button
+                          onClick={() => speakGerman(item.german, 0.5)}
+                          className="px-2 py-1 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-900 text-[10px] font-bold transition-all cursor-pointer"
+                          title="Play 0.5x Slow Audio"
+                        >
+                          0.5x 🐢
+                        </button>
+                        <button
+                          onClick={() => handlePlayAudio(item)}
+                          disabled={isPlaying}
+                          className="w-8 h-8 rounded-xl bg-slate-50 border border-border-subtle hover:bg-emerald-600 hover:text-white text-emerald-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                          title="Play German Pronunciation (1.0x)"
+                        >
+                          <Volume2 className={`w-4 h-4 ${isPlaying ? 'animate-pulse text-emerald-600' : ''}`} />
+                        </button>
+                      </div>
                     </div>
                   </div>
 

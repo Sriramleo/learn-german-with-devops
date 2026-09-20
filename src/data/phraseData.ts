@@ -362,5 +362,155 @@ export const DEVOPS_PHRASES: PhraseItem[] = [
     proTip: "'Die Kirche im Dorf lassen' = keep things in perspective / avoid taking unnecessary risks.",
     highlightWords: ['die Kirche im Dorf lassen', 'keine experimentellen Features'],
     urgencyLevel: 'normal'
+  },
+
+  // --- GREETINGS & INTRODUCTIONS (Begrüßungen) ---
+  {
+    id: 'greet-01',
+    german: 'Guten Morgen zusammen, ich bin Sriram, der neue DevOps Engineer.',
+    english: 'Good morning everyone, I am Sriram, the new DevOps engineer.',
+    tamil: 'அனைவருக்கும் காலை வணக்கம், நான் ஸ்ரீராம், புதிய டெவொப்ஸ் பொறியாளர்.',
+    tamilTranslit: '(Anaivarukkum kaalai vanakkam, naan Sriram, pudhiya DevOps poriyalar.)',
+    category: 'greetings',
+    categoryLabel: 'Greetings & Introductions',
+    scenarioTag: 'First Day Introduction',
+    proTip: "'Guten Morgen zusammen' is the standard polite intro in morning standup meetings and Slack channels.",
+    highlightWords: ['Guten Morgen zusammen', 'der neue DevOps Engineer'],
+    urgencyLevel: 'casual'
+  },
+  {
+    id: 'greet-02',
+    german: 'Hallo Kollegen, freut mich sehr, euch alle kennenzulernen!',
+    english: 'Hello colleagues, very nice to meet you all!',
+    tamil: 'வணக்கம் சகாக்களே, உங்கள் அனைவரையும் சந்திப்பதில் மிக்க மகிழ்ச்சி!',
+    tamilTranslit: '(Vanakkam sakakkale, ungal anaivaraiyum sandhippathil mikka magizhchi!)',
+    category: 'greetings',
+    categoryLabel: 'Greetings & Introductions',
+    scenarioTag: 'Team Onboarding',
+    proTip: "'Freut mich' is a versatile way to say 'Pleased to meet you' or 'My pleasure'.",
+    highlightWords: ['Hallo Kollegen', 'freut mich sehr', 'kennenzulernen'],
+    urgencyLevel: 'casual'
+  },
+  {
+    id: 'greet-03',
+    german: 'Schönen Feierabend allerseits, wir sehen uns morgen im Standup!',
+    english: 'Have a nice end of the workday everyone, see you tomorrow in the standup!',
+    tamil: 'அனைவருக்கும் இனிய மாலை வேலைமுடிவு வாழ்த்துகள், நாளை ஸ்டாண்டப்பில் சந்திப்போம்!',
+    tamilTranslit: '(Anaivarukkum iniya Feierabend vazhthukkal, naalai standup-il sandhippom!)',
+    category: 'greetings',
+    categoryLabel: 'Greetings & Introductions',
+    scenarioTag: 'End of Day',
+    proTip: "'Feierabend' is a deeply rooted cultural concept meaning the free time after clocking out of work.",
+    highlightWords: ['Schönen Feierabend allerseits', 'wir sehen uns morgen'],
+    urgencyLevel: 'casual'
+  },
+  {
+    id: 'greet-04',
+    german: 'Wie geht es dir? Kannst du mir bitte kurz mit dem VPN helfen?',
+    english: 'How are you? Could you please briefly help me with the VPN?',
+    tamil: 'எப்படி இருக்கிறீர்கள்? எனக்கு VPN-இல் தயவுசெய்து சிறிது உதவ முடியுமா?',
+    tamilTranslit: '(Eppadi irukkeergal? Enakku VPN-il thayavuseithu siridhu udhava mudiyuma?)',
+    category: 'greetings',
+    categoryLabel: 'Greetings & Introductions',
+    scenarioTag: 'Asking Help',
+    proTip: "Pairing a friendly 'Wie geht es dir?' before a question makes workplace requests very polite in Germany.",
+    highlightWords: ['Wie geht es dir?', 'kurz mit dem VPN helfen'],
+    urgencyLevel: 'normal'
+  },
+
+  // --- NUMBERS & METRICS (Zahlen & Metriken) ---
+  {
+    id: 'num-01',
+    german: 'Die Anwendung lauscht auf Port achttausendachtzig (8080) mit drei Replikaten.',
+    english: 'The application listens on port 8080 with three replicas.',
+    tamil: 'பயன்பாடு போர்ட் 8080-இல் மூன்று பிரதிப் படைகளுடன் (3 replicas) கேட்கிறது.',
+    tamilTranslit: '(App port 8080-il moondru replicas-udan keta-padukiradhu.)',
+    category: 'numbers',
+    categoryLabel: 'Numbers & Metrics (Zahlen)',
+    scenarioTag: 'Port & Pod Count',
+    proTip: "In German, port numbers can be read as full numbers ('achttausendachtzig') or digit-by-digit ('acht null acht null').",
+    highlightWords: ['lauscht auf Port', 'achttausendachtzig', 'drei Replikaten'],
+    urgencyLevel: 'normal'
+  },
+  {
+    id: 'num-02',
+    german: 'Unsere Service-Level-Verfügbarkeit liegt bei neunundneunzig Komma neun Prozent (99.9%).',
+    english: 'Our service level availability is at ninety-nine point nine percent (99.9%).',
+    tamil: 'நமது சேவை கிடைக்கும் தன்மை (SLA) 99.9% ஆக உள்ளது.',
+    tamilTranslit: '(Namathu SLA 99.9% aaga ulladhu.)',
+    category: 'numbers',
+    categoryLabel: 'Numbers & Metrics (Zahlen)',
+    scenarioTag: 'SLA / SLO',
+    proTip: "Decimals in German use 'Komma' instead of 'point'. e.g., 99.9 is 'neunundneunzig Komma neun'.",
+    highlightWords: ['neunundneunzig Komma neun Prozent', 'Verfügbarkeit'],
+    urgencyLevel: 'normal'
+  },
+  {
+    id: 'num-03',
+    german: 'Die Latenzzeit ist von fünfzig auf fünfhundert Millisekunden gestiegen.',
+    english: 'The latency has risen from fifty to five hundred milliseconds.',
+    tamil: 'தாமத நேரம் 50-லிருந்து 500 மில்லி வினாடிகளாக உயர்ந்துள்ளது.',
+    tamilTranslit: '(Thaamadha neram 50-ilirundhu 500 milliseconds aaga uyarnthulladhu.)',
+    category: 'numbers',
+    categoryLabel: 'Numbers & Metrics (Zahlen)',
+    scenarioTag: 'Latency Alert',
+    proTip: "'Gestiegen' (risen) is the past participle of 'steigen' (to rise/increase).",
+    highlightWords: ['fünfzig', 'fünfhundert Millisekunden', 'gestiegen'],
+    urgencyLevel: 'high'
+  },
+  {
+    id: 'num-04',
+    german: 'Wir haben heute zehn Pull Requests und vierundzwanzig Commits gemergt.',
+    english: 'Today we merged ten pull requests and twenty-four commits.',
+    tamil: 'இன்று நாம் பத்து புல் ரிக்வெஸ்ட்களையும் இருபத்தி நான்கு கமிட்களையும் இணைத்துள்ளோம்.',
+    tamilTranslit: '(Indru naam pathu PRs matrum 24 commits-ai merge seithullom.)',
+    category: 'numbers',
+    categoryLabel: 'Numbers & Metrics (Zahlen)',
+    scenarioTag: 'Sprint Metrics',
+    proTip: "Notice German numbers: 24 is 'vierundzwanzig' (four-and-twenty, units before tens).",
+    highlightWords: ['zehn Pull Requests', 'vierundzwanzig Commits'],
+    urgencyLevel: 'casual'
+  },
+
+  // --- GENERAL IT & DAILY BASICS ---
+  {
+    id: 'gen-01',
+    german: 'Ich lerne jeden Tag Deutsch, um fließend im Büro und in Meetings zu sprechen.',
+    english: 'I learn German every day to speak fluently at the office and in meetings.',
+    tamil: 'அலுவலகத்திலும் கூட்டங்களிலும் சரளமாக பேச நான் தினமும் ஜெர்மன் கற்கிறேன்.',
+    tamilTranslit: '(Office matrum meetings-il pesa naan thinamum German karkiraen.)',
+    category: 'general',
+    categoryLabel: 'General IT & Daily Basics',
+    scenarioTag: 'German B1 Journey',
+    proTip: "Consistent daily exposure is the fastest method to reach B1 professional communication.",
+    highlightWords: ['lerne jeden Tag Deutsch', 'fließend im Büro'],
+    urgencyLevel: 'casual'
+  },
+  {
+    id: 'gen-02',
+    german: 'Können wir den Termin bitte um eine halbe Stunde nach hinten verschieben?',
+    english: 'Could we please push the meeting back by half an hour?',
+    tamil: 'கூட்டத்தை தயவுசெய்து அரை மணி நேரம் தள்ளி வைக்க முடியுமா?',
+    tamilTranslit: '(Meeting-ai thayavuseithu arai mani neram thalli vaikka mudiyuma?)',
+    category: 'general',
+    categoryLabel: 'General IT & Daily Basics',
+    scenarioTag: 'Calendar & Scheduling',
+    proTip: "'Verschieben' is used for rescheduling appointments. 'Nach hinten verschieben' = push back (later).",
+    highlightWords: ['Termin', 'halbe Stunde', 'nach hinten verschieben'],
+    urgencyLevel: 'normal'
+  },
+  {
+    id: 'gen-03',
+    german: 'Ich habe das Problem verstanden und werde die Lösung sofort dokumentieren.',
+    english: 'I have understood the problem and will document the solution immediately.',
+    tamil: 'நான் பிரச்சினையைப் புரிந்து கொண்டேன், தீர்வை உடனே ஆவணப்படுத்துவேன்.',
+    tamilTranslit: '(Naan pirachinaiyai purinthu kondaen, theervai udane aavanapaduthuvaen.)',
+    category: 'general',
+    categoryLabel: 'General IT & Daily Basics',
+    scenarioTag: 'Collaboration',
+    proTip: "'Dokumentieren' is key in German engineering culture ('Wer schreibt, der bleibt' - Documentation matters).",
+    highlightWords: ['Problem verstanden', 'sofort dokumentieren'],
+    urgencyLevel: 'normal'
   }
 ];
+

@@ -1,11 +1,14 @@
-export type TabType = 'dashboard' | 'vocabulary' | 'phrase-dump' | 'sentence-lab' | 'interview-and-daily';
+export type TabType = 'dashboard' | 'vocabulary' | 'phrase-dump' | 'sentence-lab' | 'interview-and-daily' | 'learning-tips';
 
 export type ArticleGender = 'DER' | 'DIE' | 'DAS';
 
-export type VocabCategory = 'all' | 'k8s' | 'cicd' | 'sre' | 'security' | 'standup';
+export type VocabCategory = 'all' | 'greetings' | 'numbers' | 'general' | 'k8s' | 'cicd' | 'sre' | 'security' | 'standup';
 
 export type PhraseCategory = 
   | 'all' 
+  | 'greetings'
+  | 'numbers'
+  | 'general'
   | 'incident' 
   | 'standup' 
   | 'codereview' 
@@ -140,6 +143,7 @@ export interface UserStats {
   bookmarkedPhraseIds?: string[];
   soundEnabled: boolean;
   activeLanguage: 'DE' | 'TA' | 'EN' | 'ALL';
+  srsMastery?: Record<string, 'again' | 'hard' | 'good' | 'easy'>;
 }
 
 export interface QuizQuestion {

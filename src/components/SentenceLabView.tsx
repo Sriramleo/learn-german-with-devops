@@ -191,14 +191,26 @@ export const SentenceLabView: React.FC<SentenceLabViewProps> = ({
         </div>
 
         {/* Action icons */}
-        <div className="flex items-center justify-end gap-2 shrink-0">
+        <div className="flex items-center justify-end gap-2 shrink-0 flex-wrap">
+          <button
+            onClick={() => {
+              const fullGerman = `${currentEx.prefixTokens.join(' ')} ${currentEx.targetSlots.join(' ')}`;
+              speakGerman(fullGerman, 0.5);
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors text-xs font-semibold shadow-2xs cursor-pointer"
+            title="Hear Target German Audio at 0.5x Slow Speed"
+          >
+            <Volume2 className="w-3.5 h-3.5 text-amber-600" />
+            <span>0.5x Slow</span>
+          </button>
+
           <button
             onClick={playCurrentGermanSentence}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100 transition-colors text-xs font-semibold shadow-2xs cursor-pointer"
-            title="Hear Target German Audio"
+            title="Hear Target German Audio (1.0x)"
           >
             <Volume2 className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">Listen Target</span>
+            <span className="hidden xs:inline">1.0x Audio</span>
           </button>
 
           <button

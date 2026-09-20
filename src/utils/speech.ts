@@ -1,9 +1,18 @@
 /**
  * DevDeutsch Speech Utility
- * Uses Web Speech API (SpeechSynthesis) with safety fallbacks
+ * Uses Web Speech API (SpeechSynthesis) with speed controls and word-by-word playback
  */
 
-export function speakGerman(text: string, rate: number = 1.0, onEnd?: () => void, onError?: () => void) {
+export type PlaybackRate = 0.5 | 0.75 | 1.0;
+
+let currentUtterance: SpeechSynthesisUtterance | null = null;
+
+export function speakGerman(
+  text: string,
+  rate: number = 1.0,
+  onEnd?: () => void,
+  onError?: () => void
+) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (onEnd) onEnd();
     return;
@@ -11,31 +20,48 @@ export function speakGerman(text: string, rate: number = 1.0, onEnd?: () => void
 
   try {
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Clean text of technical punctuation that may distort TTS
+    const cleanText = text.replace(/[`*_#]/g, '').trim();
+    if (!cleanText) {
+      if (onEnd) onEnd();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'de-DE';
-    utterance.rate = rate;
+    utterance.rate = Math.max(0.4, Math.min(1.5, rate));
     utterance.pitch = 1.0;
 
     const voices = window.speechSynthesis.getVoices();
-    const deVoice = voices.find(v => v.lang.startsWith('de') || v.lang.includes('German'));
+    const deVoice = voices.find(v => v.lang.startsWith('de') || v.lang.includes('German') || v.lang.includes('de_DE'));
     if (deVoice) {
       utterance.voice = deVoice;
     }
 
     utterance.onend = () => {
+      currentUtterance = null;
       if (onEnd) onEnd();
     };
 
     utterance.onerror = (err) => {
       console.warn('TTS playback note:', err);
+      currentUtterance = null;
       if (onError) onError();
     };
 
+    currentUtterance = utterance;
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.warn('SpeechSynthesis error:', err);
     if (onEnd) onEnd();
   }
+}
+
+export function speakWord(word: string, rate: number = 0.75) {
+  // Strip punctuation like commas, periods, quotes for clean single-word audio
+  const cleanWord = word.replace(/^[.,/#!$%^&*;:{}=\-_`~()"]+|[.,/#!$%^&*;:{}=\-_`~()"]+$/g, '');
+  speakGerman(cleanWord, rate);
 }
 
 export function speakTamil(text: string, rate: number = 1.0, onEnd?: () => void) {
@@ -57,9 +83,11 @@ export function speakTamil(text: string, rate: number = 1.0, onEnd?: () => void)
     }
 
     utterance.onend = () => {
+      currentUtterance = null;
       if (onEnd) onEnd();
     };
 
+    currentUtterance = utterance;
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.warn('SpeechSynthesis Tamil error:', err);
@@ -67,8 +95,33 @@ export function speakTamil(text: string, rate: number = 1.0, onEnd?: () => void)
   }
 }
 
+export function pauseSpeech() {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause();
+    }
+  }
+}
+
+export function resumeSpeech() {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+  }
+}
+
 export function stopSpeech() {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
+    currentUtterance = null;
   }
+}
+
+export function isSpeechPaused(): boolean {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.paused;
+}
+
+export function isSpeaking(): boolean {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.speaking;
 }
